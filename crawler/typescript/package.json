@@ -1,0 +1,31 @@
+{
+  "name": "university-crawler-ts",
+  "version": "1.0.0",
+  "description": "TypeScript爬虫用于抓取高校录取数据",
+  "main": "crawl_ts.ts",
+  "scripts": {
+    "start": "ts-node crawl_ts.ts",
+    "build": "tsc",
+    "dev": "ts-node crawl_ts.ts"
+  },
+  "keywords": [
+    "crawler",
+    "university",
+    "admission",
+    "data"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12",
+    "sqlite3": "^5.1.6",
+    "sqlite": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/sqlite3": "^3.1.11",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  }
+}
