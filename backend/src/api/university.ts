@@ -63,13 +63,13 @@ router.get('/:id', (req: Request, res: Response<ApiResponse<any>>) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: university
     });
   } catch (error) {
     console.error('Error fetching university:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -90,13 +90,13 @@ router.get('/search/:name', (req: Request, res: Response<ApiResponse<any>>) => {
     }
 
     const results = universityRepo.searchByName(name, limit);
-    res.json({
+    return res.json({
       success: true,
       data: results
     });
   } catch (error) {
     console.error('Error searching universities:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -104,13 +104,13 @@ router.get('/search/:name', (req: Request, res: Response<ApiResponse<any>>) => {
 });
 
 // 获取筛选选项
-router.get('/options/filters', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/options/filters', (_req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const provinces = universityRepo.getProvinces();
     const types = universityRepo.getTypes();
     const levels = universityRepo.getLevels();
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         provinces,
@@ -120,7 +120,7 @@ router.get('/options/filters', (req: Request, res: Response<ApiResponse<any>>) =
     });
   } catch (error) {
     console.error('Error fetching filter options:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -128,16 +128,16 @@ router.get('/options/filters', (req: Request, res: Response<ApiResponse<any>>) =
 });
 
 // 获取统计信息
-router.get('/statistics/summary', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/statistics/summary', (_req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const statistics = universityRepo.getStatistics();
-    res.json({
+    return res.json({
       success: true,
       data: statistics
     });
   } catch (error) {
     console.error('Error fetching statistics:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });

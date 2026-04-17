@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { AdmissionRepository } from '../db/admission.repo';
-import { SearchParams, ApiResponse } from '../types';
+import { ApiResponse } from '../types';
 import { z } from 'zod';
 
 const router = Router();
@@ -54,7 +54,7 @@ router.get('/gaokao/:universityId', async (req: Request, res: Response<ApiRespon
 
     const totalPages = Math.ceil(total / params.limit);
 
-    res.json({
+    return res.json({
       success: true,
       data,
       pagination: {
@@ -66,7 +66,7 @@ router.get('/gaokao/:universityId', async (req: Request, res: Response<ApiRespon
     });
   } catch (error) {
     console.error('Error fetching gaokao admissions:', error);
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Invalid request parameters'
     });
@@ -89,7 +89,7 @@ router.get('/graduate/:universityId', async (req: Request, res: Response<ApiResp
 
     const totalPages = Math.ceil(total / params.limit);
 
-    res.json({
+    return res.json({
       success: true,
       data,
       pagination: {
@@ -101,7 +101,7 @@ router.get('/graduate/:universityId', async (req: Request, res: Response<ApiResp
     });
   } catch (error) {
     console.error('Error fetching graduate admissions:', error);
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Invalid request parameters'
     });
@@ -114,13 +114,13 @@ router.get('/score/match', async (req: Request, res: Response<ApiResponse<any>>)
     const params = scoreSearchSchema.parse(req.query);
     const results = admissionRepo.searchByScore(params);
 
-    res.json({
+    return res.json({
       success: true,
       data: results
     });
   } catch (error) {
     console.error('Error matching by score:', error);
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Invalid request parameters'
     });
@@ -139,13 +139,13 @@ router.get('/statistics/:universityId', (req: Request, res: Response<ApiResponse
     }
 
     const statistics = admissionRepo.getAdmissionStatistics(universityId);
-    res.json({
+    return res.json({
       success: true,
       data: statistics
     });
   } catch (error) {
     console.error('Error fetching admission statistics:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -161,13 +161,13 @@ router.get('/province/:province', (req: Request, res: Response<ApiResponse<any>>
     const batch = (req.query.batch as string) || '本科一批';
 
     const data = admissionRepo.getProvinceAdmissions(province, year, category, batch);
-    res.json({
+    return res.json({
       success: true,
       data
     });
   } catch (error) {
     console.error('Error fetching province admissions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -189,13 +189,13 @@ router.get('/trends/:universityId', (req: Request, res: Response<ApiResponse<any
     const category = req.query.category as string;
 
     const trends = admissionRepo.getAdmissionTrends(universityId, province, category);
-    res.json({
+    return res.json({
       success: true,
       data: trends
     });
   } catch (error) {
     console.error('Error fetching admission trends:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -203,7 +203,7 @@ router.get('/trends/:universityId', (req: Request, res: Response<ApiResponse<any
 });
 
 // 获取可用的年份列表
-router.get('/options/years', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/options/years', (_req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const db = require('../db/index').default.getInstance().getDatabase();
 
@@ -215,7 +215,7 @@ router.get('/options/years', (req: Request, res: Response<ApiResponse<any>>) => 
       SELECT DISTINCT year FROM graduate_admissions ORDER BY year DESC
     `).all() as { year: number }[];
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         gaokao: gaokaoYears.map(item => item.year),
@@ -224,7 +224,7 @@ router.get('/options/years', (req: Request, res: Response<ApiResponse<any>>) => 
     });
   } catch (error) {
     console.error('Error fetching year options:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -232,7 +232,7 @@ router.get('/options/years', (req: Request, res: Response<ApiResponse<any>>) => 
 });
 
 // 获取可用的省份列表（有录取数据的）
-router.get('/options/provinces', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/options/provinces', (_req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const db = require('../db/index').default.getInstance().getDatabase();
 
@@ -240,13 +240,13 @@ router.get('/options/provinces', (req: Request, res: Response<ApiResponse<any>>)
       SELECT DISTINCT province FROM gaokao_admissions ORDER BY province
     `).all() as { province: string }[];
 
-    res.json({
+    return res.json({
       success: true,
       data: provinces.map(item => item.province)
     });
   } catch (error) {
     console.error('Error fetching province options:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });

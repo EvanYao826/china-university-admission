@@ -1,11 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { UniversityRepository } from '../db/university.repo';
 import { AdmissionRepository } from '../db/admission.repo';
 import { ApiResponse } from '../types';
 import { z } from 'zod';
 
 const router = Router();
-const universityRepo = new UniversityRepository();
 const admissionRepo = new AdmissionRepository();
 
 // 输入验证 schema
@@ -104,7 +102,8 @@ router.get('/advanced', async (req: Request, res: Response<ApiResponse<any>>) =>
     // 获取总数
     const countQuery = `SELECT COUNT(DISTINCT u.id) as total FROM universities u LEFT JOIN gaokao_admissions ga ON u.id = ga.university_id WHERE 1=1 ${conditions.length > 0 ? 'AND ' + conditions.join(' AND ') : ''}`;
     const countStmt = db.prepare(countQuery);
-    const total = countStmt.get(...values).total;
+    const countResult = countStmt.get(...values) as { total: number };
+    const total = countResult.total;
 
     // 排序
     let orderBy = 'u.name COLLATE NOCASE';
@@ -140,7 +139,7 @@ router.get('/advanced', async (req: Request, res: Response<ApiResponse<any>>) =>
 
     const totalPages = Math.ceil(total / limit);
 
-    res.json({
+    return res.json({
       success: true,
       data: enhancedData,
       pagination: {
@@ -152,7 +151,7 @@ router.get('/advanced', async (req: Request, res: Response<ApiResponse<any>>) =>
     });
   } catch (error) {
     console.error('Error in advanced search:', error);
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Invalid request parameters'
     });
@@ -194,7 +193,7 @@ router.get('/suggestions', (req: Request, res: Response<ApiResponse<any>>) => {
 
     const majors = majorStmt.all(`%${query}%`);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         universities,
@@ -203,7 +202,7 @@ router.get('/suggestions', (req: Request, res: Response<ApiResponse<any>>) => {
     });
   } catch (error) {
     console.error('Error fetching suggestions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -211,7 +210,7 @@ router.get('/suggestions', (req: Request, res: Response<ApiResponse<any>>) => {
 });
 
 // 热门搜索
-router.get('/popular', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/popular', (_req: Request, res: Response<ApiResponse<any>>) => {
   try {
     // 这里可以添加搜索热度统计逻辑
     // 暂时返回一些常见搜索
@@ -225,13 +224,13 @@ router.get('/popular', (req: Request, res: Response<ApiResponse<any>>) => {
       { term: '2024年录取', type: 'year' }
     ];
 
-    res.json({
+    return res.json({
       success: true,
       data: popularSearches
     });
   } catch (error) {
     console.error('Error fetching popular searches:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -239,17 +238,17 @@ router.get('/popular', (req: Request, res: Response<ApiResponse<any>>) => {
 });
 
 // 搜索历史（简化版，实际应该基于用户会话）
-router.get('/history', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/history', (_req: Request, res: Response<ApiResponse<any>>) => {
   try {
     // 这里可以添加基于会话的搜索历史
     // 暂时返回空数组
-    res.json({
+    return res.json({
       success: true,
       data: []
     });
   } catch (error) {
     console.error('Error fetching search history:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });
@@ -257,17 +256,22 @@ router.get('/history', (req: Request, res: Response<ApiResponse<any>>) => {
 });
 
 // 搜索统计
-router.get('/statistics', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/statistics', (_req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const db = require('../db/index').default.getInstance().getDatabase();
 
     // 获取搜索相关统计
-    const totalUniversities = db.prepare('SELECT COUNT(*) as count FROM universities').get().count;
-    const totalGaokaoRecords = db.prepare('SELECT COUNT(*) as count FROM gaokao_admissions').get().count;
-    const totalGraduateRecords = db.prepare('SELECT COUNT(*) as count FROM graduate_admissions').get().count;
-    const latestYear = db.prepare('SELECT MAX(year) as year FROM gaokao_admissions').get().year;
+    const totalUniversitiesResult = db.prepare('SELECT COUNT(*) as count FROM universities').get() as { count: number };
+    const totalGaokaoRecordsResult = db.prepare('SELECT COUNT(*) as count FROM gaokao_admissions').get() as { count: number };
+    const totalGraduateRecordsResult = db.prepare('SELECT COUNT(*) as count FROM graduate_admissions').get() as { count: number };
+    const latestYearResult = db.prepare('SELECT MAX(year) as year FROM gaokao_admissions').get() as { year: number };
 
-    res.json({
+    const totalUniversities = totalUniversitiesResult.count;
+    const totalGaokaoRecords = totalGaokaoRecordsResult.count;
+    const totalGraduateRecords = totalGraduateRecordsResult.count;
+    const latestYear = latestYearResult.year;
+
+    return res.json({
       success: true,
       data: {
         totalUniversities,
@@ -279,7 +283,7 @@ router.get('/statistics', (req: Request, res: Response<ApiResponse<any>>) => {
     });
   } catch (error) {
     console.error('Error fetching search statistics:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     });

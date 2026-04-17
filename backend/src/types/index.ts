@@ -54,6 +54,9 @@ export interface SearchParams {
   year?: number;
   category?: string;
   batch?: string;
+  major?: string;
+  degree_type?: string;
+  study_mode?: string;
   minScore?: number;
   maxScore?: number;
   page?: number;

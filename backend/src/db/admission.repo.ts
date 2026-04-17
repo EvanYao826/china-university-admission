@@ -50,7 +50,8 @@ export class AdmissionRepository {
 
     // 获取总数
     const countStmt = this.db.prepare(`SELECT COUNT(*) as total FROM gaokao_admissions ${whereClause}`);
-    const total = countStmt.get(...values).total;
+    const countResult = countStmt.get(...values) as { total: number };
+    const total = countResult.total;
 
     // 获取数据
     const query = `
@@ -112,7 +113,8 @@ export class AdmissionRepository {
 
     // 获取总数
     const countStmt = this.db.prepare(`SELECT COUNT(*) as total FROM graduate_admissions ${whereClause}`);
-    const total = countStmt.get(...values).total;
+    const countResult = countStmt.get(...values) as { total: number };
+    const total = countResult.total;
 
     // 获取数据
     const query = `
@@ -167,7 +169,7 @@ export class AdmissionRepository {
       WHERE university_id = ?
       GROUP BY year
       ORDER BY year DESC
-    `).all(universityId);
+    `).all(universityId) as Array<{ year: number; record_count: number; avg_score: number; total_admissions: number }>;
 
     const gaokaoProvinceStats = this.db.prepare(`
       SELECT province, COUNT(*) as record_count,
@@ -186,7 +188,7 @@ export class AdmissionRepository {
       WHERE university_id = ?
       GROUP BY year
       ORDER BY year DESC
-    `).all(universityId);
+    `).all(universityId) as Array<{ year: number; record_count: number; total_admissions: number }>;
 
     const graduateMajorStats = this.db.prepare(`
       SELECT major, COUNT(*) as record_count,

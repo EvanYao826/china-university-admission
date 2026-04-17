@@ -41,7 +41,8 @@ export class UniversityRepository {
 
     // 获取总数
     const countStmt = this.db.prepare(`SELECT COUNT(*) as total FROM universities ${whereClause}`);
-    const total = countStmt.get(...values).total;
+    const countResult = countStmt.get(...values) as { total: number };
+    const total = countResult.total;
 
     // 获取数据
     const orderBy = sortBy === 'name' ? 'name COLLATE NOCASE' : sortBy;
@@ -126,8 +127,9 @@ export class UniversityRepository {
         END
     `);
 
+    const totalResult = totalStmt.get() as { total: number };
     return {
-      total: totalStmt.get().total,
+      total: totalResult.total,
       byProvince: provinceStmt.all(),
       byType: typeStmt.all(),
       byLevel: levelStmt.all()

@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import path from 'path';
 import dotenv from 'dotenv';
 
 // 加载环境变量
@@ -45,7 +44,7 @@ app.use('/api/admissions', admissionRoutes);
 app.use('/api/search', searchRoutes);
 
 // 健康检查端点
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -55,7 +54,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // API 文档端点
-app.get('/api', (req: Request, res: Response) => {
+app.get('/api', (_req: Request, res: Response) => {
   res.json({
     name: 'University Admission API',
     version: '1.0.0',
@@ -95,7 +94,7 @@ app.get('/api', (req: Request, res: Response) => {
 });
 
 // 错误处理中间件
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled error:', err);
 
   res.status(500).json({
