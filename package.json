@@ -1,0 +1,46 @@
+{
+  "name": "china-university-admission-hub",
+  "version": "1.0.0",
+  "description": "中国高校录取数据查询系统 - 一站式查询高考、研究生录取数据",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "node scripts/start.js",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "preview": "cd frontend && npm run preview",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "clean": "rm -rf backend/dist frontend/dist backend/node_modules frontend/node_modules node_modules",
+    "init-db": "node scripts/init-db.js",
+    "lint": "echo 'Linting not configured'",
+    "test": "echo 'Testing not configured'"
+  },
+  "keywords": [
+    "university",
+    "admission",
+    "china",
+    "education",
+    "gaokao",
+    "graduate",
+    "vue",
+    "nodejs",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.0.1"
+  }
+}

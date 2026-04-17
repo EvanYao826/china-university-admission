@@ -1,0 +1,21 @@
+# Python 爬虫依赖
+requests==2.31.0
+beautifulsoup4==4.12.2
+pandas==2.1.4
+openai==1.3.0
+pypdf2==3.0.1
+pdfplumber==0.10.3
+sqlite-utils==3.35.1
+aiohttp==3.9.1
+lxml==4.9.3
+tqdm==4.66.1
+python-dotenv==1.0.0
+
+# 可选：数据可视化
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# 开发依赖
+pytest==7.4.3
+black==23.11.0
+flake8==6.1.0

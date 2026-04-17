@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Development
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Database
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Coverage
+coverage/
+.nyc_output
+
+# TypeScript
+*.tsbuildinfo
+
+# Vue
+*.vue.ts
+*.vue.js
+
+# Testing
+cypress/videos/
+cypress/screenshots/
+
+# Package manager specific
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Local development data
+data/sample-*.db
+data/test-*.db
+
+# Frontend build artifacts
+frontend/dist/
+frontend/.vite/
+
+# Backend build artifacts
+backend/dist/
