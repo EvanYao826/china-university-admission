@@ -1,173 +1,125 @@
 <template>
   <div class="home-page">
-    <!-- 英雄区域 -->
-    <div class="hero-section">
-      <div class="hero-content">
-        <h1 class="hero-title">中国高校录取数据查询系统</h1>
-        <p class="hero-subtitle">一站式查询高考、研究生录取数据，助力升学决策</p>
-
-        <!-- 快速搜索 -->
-        <div class="quick-search">
-          <el-input
-            v-model="quickSearchQuery"
-            placeholder="输入高校名称、专业或省份..."
-            size="large"
-            @keyup.enter="handleQuickSearch"
-          >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-            <template #append>
-              <el-button
-                type="primary"
-                @click="handleQuickSearch"
-                :icon="Search"
-              >
-                搜索
-              </el-button>
-            </template>
-          </el-input>
-
-          <!-- 热门搜索标签 -->
-          <div class="popular-tags">
-            <span class="tags-label">热门搜索：</span>
-            <el-tag
-              v-for="tag in popularTags"
-              :key="tag.term"
-              class="tag-item"
-              @click="handleTagClick(tag)"
-            >
-              {{ tag.term }}
-            </el-tag>
-          </div>
-        </div>
-      </div>
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h1>中国高校录取数据查询系统</h1>
+      <p>一站式查询高考、研究生录取数据</p>
     </div>
-
-    <!-- 功能卡片区域 -->
-    <div class="features-section">
-      <h2 class="section-title">核心功能</h2>
-      <div class="features-grid">
-        <el-card
-          v-for="feature in features"
-          :key="feature.title"
-          class="feature-card"
-          shadow="hover"
-          @click="navigateTo(feature.route)"
-        >
-          <div class="feature-icon">
-            <component :is="feature.icon" />
-          </div>
-          <h3 class="feature-title">{{ feature.title }}</h3>
-          <p class="feature-desc">{{ feature.description }}</p>
-          <el-button type="primary" link class="feature-link">
-            立即使用 →
-          </el-button>
-        </el-card>
-      </div>
+    
+    <!-- 功能卡片 -->
+    <div class="features">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-card class="feature-card" @click="navigateTo('/universities')">
+            <template #header>
+              <div class="card-header">
+                <el-icon><OfficeBuilding /></el-icon>
+                <span>高校查询</span>
+              </div>
+            </template>
+            <div class="feature-content">
+              <p>按省份、类型、层次筛选高校</p>
+              <el-button type="primary" size="small">立即查询</el-button>
+            </div>
+          </el-card>
+        </el-col>
+        
+        <el-col :span="6">
+          <el-card class="feature-card" @click="navigateTo('/admissions')">
+            <template #header>
+              <div class="card-header">
+                <el-icon><DataAnalysis /></el-icon>
+                <span>录取数据</span>
+              </div>
+            </template>
+            <div class="feature-content">
+              <p>历年高考、研究生录取分数线</p>
+              <el-button type="primary" size="small">查看数据</el-button>
+            </div>
+          </el-card>
+        </el-col>
+        
+        <el-col :span="6">
+          <el-card class="feature-card" @click="navigateTo('/score-match')">
+            <template #header>
+              <div class="card-header">
+                <el-icon><TrendCharts /></el-icon>
+                <span>分数匹配</span>
+              </div>
+            </template>
+            <div class="feature-content">
+              <p>根据分数推荐合适的高校</p>
+              <el-button type="primary" size="small">开始匹配</el-button>
+            </div>
+          </el-card>
+        </el-col>
+        
+        <el-col :span="6">
+          <el-card class="feature-card" @click="navigateTo('/compare')">
+            <template #header>
+              <div class="card-header">
+                <el-icon><PieChart /></el-icon>
+                <span>高校对比</span>
+              </div>
+            </template>
+            <div class="feature-content">
+              <p>多所高校的横向对比分析</p>
+              <el-button type="primary" size="small">开始对比</el-button>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
-
-    <!-- 数据统计区域 -->
-    <div class="stats-section" v-if="stats">
-      <h2 class="section-title">数据概览</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><School /></el-icon>
+    
+    <!-- 数据统计 -->
+    <div class="stats-section">
+      <el-card>
+        <template #header>
+          <div class="card-header">
+            <el-icon><PieChart /></el-icon>
+            <span>数据统计</span>
           </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalUniversities || 0 }}</div>
+        </template>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">{{ universityCount }}</div>
             <div class="stat-label">高校数量</div>
           </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><Document /></el-icon>
+          <div class="stat-item">
+            <div class="stat-value">{{ gaokaoCount }}</div>
+            <div class="stat-label">高考数据</div>
           </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalGaokaoRecords || 0 }}</div>
-            <div class="stat-label">高考录取记录</div>
+          <div class="stat-item">
+            <div class="stat-value">{{ graduateCount }}</div>
+            <div class="stat-label">研究生数据</div>
           </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><Reading /></el-icon>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalGraduateRecords || 0 }}</div>
-            <div class="stat-label">研究生录取记录</div>
+          <div class="stat-item">
+            <div class="stat-value">{{ years.length }}</div>
+            <div class="stat-label">覆盖年份</div>
           </div>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <el-icon><Calendar /></el-icon>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.latestYear || '--' }}</div>
-            <div class="stat-label">最新数据年份</div>
-          </div>
-        </div>
-      </div>
+      </el-card>
     </div>
-
-    <!-- 热门高校区域 -->
-    <div class="popular-section" v-if="popularUniversities.length > 0">
-      <h2 class="section-title">热门高校</h2>
-      <div class="universities-grid">
-        <el-card
-          v-for="uni in popularUniversities"
-          :key="uni.id"
-          class="university-card"
-          shadow="hover"
-          @click="viewUniversityDetail(uni.id)"
-        >
-          <div class="university-header">
-            <h3 class="university-name">{{ uni.name }}</h3>
-            <el-tag
-              :type="getLevelTagType(uni.level)"
-              size="small"
-              class="level-tag"
-            >
-              {{ uni.level }}
-            </el-tag>
+    
+    <!-- 最新数据 -->
+    <div class="recent-data">
+      <el-card>
+        <template #header>
+          <div class="card-header">
+            <el-icon><Timer /></el-icon>
+            <span>最新数据</span>
+            <el-button type="text" @click="navigateTo('/statistics')">查看更多</el-button>
           </div>
-          <div class="university-info">
-            <div class="info-item">
-              <el-icon><Location /></el-icon>
-              <span>{{ uni.province }} {{ uni.city }}</span>
-            </div>
-            <div class="info-item">
-              <el-icon><OfficeBuilding /></el-icon>
-              <span>{{ uni.type }}</span>
-            </div>
-          </div>
-          <div class="university-actions">
-            <el-button type="primary" size="small" @click.stop="viewUniversityDetail(uni.id)">
-              查看详情
-            </el-button>
-            <el-button type="info" size="small" @click.stop="addToCompare(uni)">
-              加入对比
-            </el-button>
-          </div>
-        </el-card>
-      </div>
-    </div>
-
-    <!-- 使用指南区域 -->
-    <div class="guide-section">
-      <h2 class="section-title">使用指南</h2>
-      <div class="guide-steps">
-        <div class="step-item" v-for="step in guideSteps" :key="step.title">
-          <div class="step-number">{{ step.number }}</div>
-          <div class="step-content">
-            <h3>{{ step.title }}</h3>
-            <p>{{ step.description }}</p>
-          </div>
-        </div>
-      </div>
+        </template>
+        <el-table :data="recentData" style="width: 100%">
+          <el-table-column prop="universityName" label="高校名称" width="180" />
+          <el-table-column prop="province" label="省份" width="100" />
+          <el-table-column prop="year" label="年份" width="80" />
+          <el-table-column prop="category" label="科类" width="100" />
+          <el-table-column prop="avgScore" label="平均分" width="100" />
+          <el-table-column prop="admissionCount" label="招生人数" width="100" />
+        </el-table>
+      </el-card>
     </div>
   </div>
 </template>
@@ -175,501 +127,234 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { api } from '@/api/client'
 import {
-  Search,
-  School,
-  Document,
-  Reading,
-  Calendar,
-  Location,
   OfficeBuilding,
   DataAnalysis,
   TrendCharts,
   PieChart,
-  List
+  Timer
 } from '@element-plus/icons-vue'
-import type { University } from '@/types'
 
 const router = useRouter()
-
-// 搜索查询
-const quickSearchQuery = ref('')
+const searchQuery = ref('')
 
 // 统计数据
-const stats = ref<any>(null)
+const universityCount = ref(5)
+const gaokaoCount = ref(120)
+const graduateCount = ref(240)
+const years = ref([2021, 2022, 2023])
 
-// 热门高校
-const popularUniversities = ref<University[]>([])
-
-// 热门搜索标签
-const popularTags = ref([
-  { term: '清华大学', type: 'university' },
-  { term: '北京大学', type: 'university' },
-  { term: '计算机科学', type: 'major' },
-  { term: '北京', type: 'province' },
-  { term: '985高校', type: 'level' },
-  { term: '2024年录取', type: 'year' }
-])
-
-// 功能卡片
-const features = ref([
+// 最新数据
+const recentData = ref([
   {
-    title: '高校查询',
-    description: '按省份、类型、层次筛选高校，查看详细信息',
-    icon: School,
-    route: '/universities'
+    universityName: '清华大学',
+    province: '山东',
+    year: 2023,
+    category: '理科',
+    avgScore: 675,
+    admissionCount: 95
   },
   {
-    title: '录取数据',
-    description: '查看历年高考、研究生录取分数线和招生人数',
-    icon: DataAnalysis,
-    route: '/admissions'
+    universityName: '北京大学',
+    province: '山西',
+    year: 2023,
+    category: '文科',
+    avgScore: 660,
+    admissionCount: 85
   },
   {
-    title: '分数匹配',
-    description: '根据分数推荐合适的高校和专业',
-    icon: TrendCharts,
-    route: '/score-match'
+    universityName: '浙江大学',
+    province: '河南',
+    year: 2023,
+    category: '理科',
+    avgScore: 665,
+    admissionCount: 90
   },
   {
-    title: '数据统计',
-    description: '高校分布、录取趋势等可视化分析',
-    icon: PieChart,
-    route: '/statistics'
+    universityName: '复旦大学',
+    province: '河北',
+    year: 2023,
+    category: '文科',
+    avgScore: 655,
+    admissionCount: 80
   }
 ])
 
-// 使用指南步骤
-const guideSteps = ref([
-  {
-    number: '01',
-    title: '选择查询方式',
-    description: '根据需求选择高校查询、录取数据查询或分数匹配'
-  },
-  {
-    number: '02',
-    title: '设置筛选条件',
-    description: '按省份、年份、批次等条件筛选数据'
-  },
-  {
-    number: '03',
-    title: '查看结果',
-    description: '浏览查询结果，查看详细数据和图表分析'
-  },
-  {
-    number: '04',
-    title: '对比分析',
-    description: '将感兴趣的高校加入对比，进行多维度比较'
-  }
-])
+// 导航到指定页面
+const navigateTo = (path: string) => {
+  router.push(path)
+}
 
-// 获取统计数据
-const fetchStatistics = async () => {
-  try {
-    const response = await api.search.getSearchStatistics()
-    if (response.data.success) {
-      stats.value = response.data.data
-    }
-  } catch (error) {
-    console.error('Failed to fetch statistics:', error)
+// 处理搜索
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    router.push(`/search?q=${encodeURIComponent(searchQuery.value)}`)
   }
 }
 
-// 获取热门高校
-const fetchPopularUniversities = async () => {
-  try {
-    const response = await api.universities.getUniversities({
-      limit: 8,
-      sortBy: 'name',
-      sortOrder: 'asc'
-    })
-    if (response.data.success) {
-      popularUniversities.value = response.data.data
-    }
-  } catch (error) {
-    console.error('Failed to fetch popular universities:', error)
-  }
-}
-
-// 处理快速搜索
-const handleQuickSearch = () => {
-  if (quickSearchQuery.value.trim()) {
-    router.push({
-      path: '/search',
-      query: { q: quickSearchQuery.value.trim() }
-    })
-    quickSearchQuery.value = ''
-  }
-}
-
-// 处理标签点击
-const handleTagClick = (tag: any) => {
-  router.push({
-    path: '/search',
-    query: { q: tag.term }
-  })
-}
-
-// 导航到指定路由
-const navigateTo = (route: string) => {
-  router.push(route)
-}
-
-// 查看高校详情
-const viewUniversityDetail = (id: number) => {
-  router.push(`/universities/${id}`)
-}
-
-// 添加到对比
-const addToCompare = (university: University) => {
-  // 这里可以添加到对比列表
-  ElMessage.success(`已添加 ${university.name} 到对比列表`)
-}
-
-// 获取层次标签类型
-const getLevelTagType = (level: string) => {
-  switch (level) {
-    case '985':
-      return 'danger'
-    case '211':
-      return 'warning'
-    case '双一流':
-      return 'success'
-    default:
-      return 'info'
-  }
-}
-
-// 组件挂载时获取数据
+// 组件挂载
 onMounted(() => {
-  fetchStatistics()
-  fetchPopularUniversities()
+  console.log('HomePage mounted')
 })
 </script>
 
 <style scoped>
 .home-page {
-  padding-bottom: 40px;
+  padding: 40px 0;
+  background-color: #f5f7fa;
 }
 
-/* 英雄区域 */
-.hero-section {
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 40px 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 80px 20px;
-  border-radius: 12px;
-  margin-bottom: 40px;
-  text-align: center;
+  border-radius: 8px;
+  margin: 0 20px 40px;
 }
 
-.hero-content {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.hero-title {
-  font-size: 2.5rem;
+.page-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 36px;
   font-weight: bold;
-  margin-bottom: 20px;
-  line-height: 1.2;
 }
 
-.hero-subtitle {
-  font-size: 1.2rem;
+.page-header p {
+  margin: 0;
+  font-size: 18px;
   opacity: 0.9;
-  margin-bottom: 40px;
 }
 
-.quick-search {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.quick-search :deep(.el-input-group__append) {
-  background-color: #4c51bf;
-  border: none;
-}
-
-.quick-search :deep(.el-input-group__append .el-button) {
-  background-color: #4c51bf;
-  border: none;
-}
-
-.popular-tags {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.tags-label {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.tag-item {
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.tag-item:hover {
-  transform: translateY(-2px);
-}
-
-/* 功能卡片区域 */
-.section-title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 40px;
-  color: #2d3748;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 60px;
+/* 功能卡片 */
+.features {
+  margin: 0 20px 40px;
 }
 
 .feature-card {
+  height: 200px;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-  height: 100%;
-  border: none;
+  transition: all 0.3s ease;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.feature-icon {
-  font-size: 48px;
-  color: #667eea;
-  margin-bottom: 20px;
-  text-align: center;
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.feature-title {
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #2d3748;
+.feature-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: calc(100% - 48px);
+  padding-top: 20px;
 }
 
-.feature-desc {
-  color: #718096;
-  line-height: 1.6;
-  margin-bottom: 20px;
+.feature-content p {
+  margin: 0 0 20px 0;
+  color: #606266;
 }
 
-.feature-link {
-  color: #667eea;
-  font-weight: 500;
-}
-
-/* 数据统计区域 */
+/* 数据统计 */
 .stats-section {
-  margin-bottom: 60px;
+  margin: 0 20px 40px;
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px 0;
 }
 
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+.stat-item {
+  text-align: center;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-  font-size: 40px;
-  color: #667eea;
-}
-
-.stat-content {
-  flex: 1;
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 24px;
   font-weight: bold;
-  color: #2d3748;
+  color: #667eea;
   margin-bottom: 5px;
 }
 
 .stat-label {
-  color: #718096;
   font-size: 14px;
-}
-
-/* 热门高校区域 */
-.popular-section {
-  margin-bottom: 60px;
-}
-
-.universities-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-.university-card {
-  cursor: pointer;
-  transition: transform 0.3s;
-  border: none;
-}
-
-.university-card:hover {
-  transform: translateY(-3px);
-}
-
-.university-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 15px;
-}
-
-.university-name {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #2d3748;
-  margin: 0;
-  flex: 1;
-}
-
-.level-tag {
-  margin-left: 10px;
-}
-
-.university-info {
-  margin-bottom: 20px;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  color: #718096;
-  font-size: 14px;
-}
-
-.info-item .el-icon {
-  color: #a0aec0;
-}
-
-.university-actions {
-  display: flex;
-  gap: 10px;
-}
-
-/* 使用指南区域 */
-.guide-section {
-  background: #f7fafc;
-  border-radius: 12px;
-  padding: 40px;
-}
-
-.guide-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-}
-
-.step-item {
-  display: flex;
-  gap: 20px;
-}
-
-.step-number {
-  font-size: 2rem;
-  font-weight: bold;
   color: #667eea;
-  min-width: 60px;
 }
 
-.step-content h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #2d3748;
-}
-
-.step-content p {
-  color: #718096;
-  line-height: 1.6;
+/* 最新数据 */
+.recent-data {
+  margin: 0 20px;
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 2rem;
+@media (max-width: 1200px) {
+  .page-header {
+    margin: 0 10px 30px;
+    padding: 30px 0;
   }
-
-  .hero-subtitle {
-    font-size: 1rem;
+  
+  .page-header h1 {
+    font-size: 30px;
   }
-
-  .features-grid,
-  .stats-grid,
-  .universities-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .guide-steps {
-    grid-template-columns: 1fr;
-  }
-
-  .step-item {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .step-number {
-    margin-bottom: 10px;
+  
+  .features,
+  .stats-section,
+  .recent-data {
+    margin-left: 10px;
+    margin-right: 10px;
   }
 }
 
-@media (max-width: 480px) {
-  .hero-section {
-    padding: 40px 20px;
+@media (max-width: 768px) {
+  .home-page {
+    padding: 20px 0;
   }
-
-  .hero-title {
-    font-size: 1.5rem;
+  
+  .page-header {
+    padding: 20px 0;
   }
-
-  .section-title {
-    font-size: 1.5rem;
+  
+  .page-header h1 {
+    font-size: 24px;
   }
-
-  .stat-card {
+  
+  .page-header p {
+    font-size: 16px;
+  }
+  
+  .feature-card {
+    height: 180px;
+  }
+  
+  .stats-grid {
     flex-direction: column;
-    text-align: center;
-    padding: 20px;
+    align-items: center;
   }
-
-  .stat-icon {
-    margin-bottom: 15px;
+  
+  .stat-item {
+    width: 100%;
+    max-width: 200px;
   }
 }
 </style>

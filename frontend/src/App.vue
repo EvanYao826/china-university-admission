@@ -21,34 +21,6 @@
                 <span>首页</span>
               </template>
             </el-menu-item>
-
-            <el-menu-item index="/universities">
-              <template #title>
-                <el-icon><OfficeBuilding /></el-icon>
-                <span>高校查询</span>
-              </template>
-            </el-menu-item>
-
-            <el-menu-item index="/admissions">
-              <template #title>
-                <el-icon><DataAnalysis /></el-icon>
-                <span>录取数据</span>
-              </template>
-            </el-menu-item>
-
-            <el-menu-item index="/score-match">
-              <template #title>
-                <el-icon><TrendCharts /></el-icon>
-                <span>分数匹配</span>
-              </template>
-            </el-menu-item>
-
-            <el-menu-item index="/statistics">
-              <template #title>
-                <el-icon><PieChart /></el-icon>
-                <span>数据统计</span>
-              </template>
-            </el-menu-item>
           </el-menu>
         </div>
 
@@ -173,10 +145,6 @@ import { api } from '@/api/client'
 import {
   School,
   House,
-  OfficeBuilding,
-  DataAnalysis,
-  TrendCharts,
-  PieChart,
   Search
 } from '@element-plus/icons-vue'
 

@@ -1,285 +1,635 @@
 <template>
-  <div class="universities-view">
-    <el-container>
-      <el-header>
-        <h1>高校查询</h1>
-        <p>浏览和搜索全国高校信息</p>
-      </el-header>
-      
-      <el-main>
-        <el-card class="filter-card">
-          <template #header>
-            <div class="card-header">
-              <span>筛选条件</span>
-            </div>
+  <div class="universities-page">
+    <!-- 顶部4个搜索下拉栏 -->
+    <div class="top-search-row">
+      <div class="search-item">
+        <label>学校名称</label>
+        <el-input v-model="filters.name" placeholder="输入学校名称查询" clearable @clear="fetchSchools" @blur="handleSearch" @keyup.enter="handleSearch">
+          <template #append>
+            <el-button @click="handleSearch" :icon="Search" circle />
           </template>
-          
-          <el-form :inline="true" :model="filterForm" class="filter-form">
-            <el-form-item label="高校名称">
-              <el-input v-model="filterForm.name" placeholder="输入高校名称" style="width: 200px;" />
-            </el-form-item>
-            
-            <el-form-item label="高校类型">
-              <el-select v-model="filterForm.type" placeholder="选择高校类型">
-                <el-option label="全部" value="" />
-                <el-option label="985工程" value="985" />
-                <el-option label="211工程" value="211" />
-                <el-option label="双一流" value="doubleFirstClass" />
-                <el-option label="普通本科" value="regular" />
-              </el-select>
-            </el-form-item>
-            
-            <el-form-item label="省份">
-              <el-select v-model="filterForm.province" placeholder="选择省份">
-                <el-option label="全部" value="" />
-                <el-option label="北京" value="北京" />
-                <el-option label="上海" value="上海" />
-                <el-option label="浙江" value="浙江" />
-                <el-option label="江苏" value="江苏" />
-                <el-option label="广东" value="广东" />
-              </el-select>
-            </el-form-item>
-            
-            <el-form-item label="办学层次">
-              <el-select v-model="filterForm.level" placeholder="选择办学层次">
-                <el-option label="全部" value="" />
-                <el-option label="本科" value="undergraduate" />
-                <el-option label="专科" value="juniorCollege" />
-              </el-select>
-            </el-form-item>
-            
-            <el-form-item>
-              <el-button type="primary" @click="search">查询</el-button>
-              <el-button @click="reset">重置</el-button>
-            </el-form-item>
-          </el-form>
-        </el-card>
-        
-        <el-card class="results-card" style="margin-top: 20px;">
-          <template #header>
-            <div class="card-header">
-              <span>高校列表</span>
-              <span class="result-count">共 {{ total }} 所高校</span>
-            </div>
-          </template>
-          
-          <el-table :data="universitiesData" style="width: 100%">
-            <el-table-column prop="name" label="高校名称" width="200">
-              <template #default="scope">
-                <el-link type="primary" @click="viewDetail(scope.row.id)">
-                  {{ scope.row.name }}
-                </el-link>
-              </template>
-            </el-table-column>
-            <el-table-column prop="province" label="省份" width="100" />
-            <el-table-column prop="type" label="类型" width="120">
-              <template #default="scope">
-                <el-tag v-if="scope.row.type.includes('985')" type="danger">985</el-tag>
-                <el-tag v-else-if="scope.row.type.includes('211')" type="warning">211</el-tag>
-                <el-tag v-else-if="scope.row.type.includes('doubleFirstClass')" type="success">双一流</el-tag>
-                <el-tag v-else type="info">普通</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="level" label="办学层次" width="100" />
-            <el-table-column prop="foundedYear" label="建校年份" width="100" />
-            <el-table-column prop="studentCount" label="在校生数" width="100" />
-            <el-table-column label="操作" width="150">
-              <template #default="scope">
-                <el-button size="small" type="primary" @click="viewDetail(scope.row.id)">
-                  详情
-                </el-button>
-                <el-button size="small" @click="addToCompare(scope.row)">
-                  对比
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          
-          <div class="pagination" style="margin-top: 20px;">
-            <el-pagination
-              v-model:current-page="currentPage"
-              v-model:page-size="pageSize"
-              :page-sizes="[10, 20, 50, 100]"
-              layout="total, sizes, prev, pager, next, jumper"
-              :total="total"
-              @size-change="handleSizeChange"
-              @current-change="handleCurrentChange"
-            />
+        </el-input>
+      </div>
+      <div class="search-item">
+        <label>学校类型</label>
+        <el-select v-model="filters.type" placeholder="请选择类型" clearable @change="fetchSchools">
+          <el-option label="综合类" value="综合类" />
+          <el-option label="理工类" value="理工类" />
+          <el-option label="师范类" value="师范类" />
+          <el-option label="医药类" value="医药类" />
+          <el-option label="农林类" value="农林类" />
+        </el-select>
+      </div>
+      <div class="search-item">
+        <label>学校层次</label>
+        <el-select v-model="filters.level" placeholder="请选择层次" clearable @change="fetchSchools">
+          <el-option label="985工程" value="985" />
+          <el-option label="211工程" value="211" />
+          <el-option label="双一流" value="双一流" />
+          <el-option label="普通本科" value="普通本科" />
+        </el-select>
+      </div>
+      <div class="search-item">
+        <label>所在省份</label>
+        <el-select v-model="filters.province" placeholder="请选择省份" clearable @change="fetchSchools">
+          <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+        </el-select>
+      </div>
+    </div>
+
+    <!-- 主体左右布局 -->
+    <div class="main-container">
+      <!-- 左侧院校列表 -->
+      <div class="school-list-box">
+        <div class="school-list-title">院校列表</div>
+        <div
+          v-for="school in schools"
+          :key="school.id"
+          class="school-item"
+          :class="{ active: selectedSchool?.id === school.id }"
+          @click="selectSchool(school)"
+        >
+          {{ school.name }}
+          <span class="school-tag">{{ school.tags || school.level }}</span>
+        </div>
+        <el-empty v-if="schools.length === 0" description="暂无数据" />
+      </div>
+
+      <!-- 右侧主内容区 -->
+      <div class="content-box">
+        <!-- 顶部标签导航 -->
+        <div class="tab-nav">
+          <div
+            class="tab-item"
+            :class="{ active: activeTab === 'intro' }"
+            @click="activeTab = 'intro'"
+          >
+            学校概况
           </div>
-        </el-card>
-      </el-main>
-    </el-container>
+          <div
+            class="tab-item"
+            :class="{ active: activeTab === 'undergraduate' }"
+            @click="activeTab = 'undergraduate'"
+          >
+            本科生招生
+          </div>
+          <div
+            class="tab-item"
+            :class="{ active: activeTab === 'postgrad' }"
+            @click="activeTab = 'postgrad'"
+          >
+            研究生招生
+          </div>
+        </div>
+
+        <div class="tab-content">
+          <!-- 1. 学校概况 -->
+          <div v-show="activeTab === 'intro'" class="tab-panel">
+            <template v-if="selectedSchool">
+              <h3>学校简介</h3>
+              <div class="intro-box">
+                {{ selectedSchool.description || '暂无学校简介' }}
+              </div>
+
+              <h3>基本信息</h3>
+              <table class="info-table">
+                <tr>
+                  <td>院校性质</td>
+                  <td>{{ selectedSchool.nature || '-' }}</td>
+                </tr>
+                <tr>
+                  <td>办学层次</td>
+                  <td>{{ selectedSchool.education_level || '-' }}</td>
+                </tr>
+                <tr>
+                  <td>学校类别</td>
+                  <td>{{ selectedSchool.category || selectedSchool.type || '-' }}</td>
+                </tr>
+                <tr>
+                  <td>所在地区</td>
+                  <td>{{ selectedSchool.address || selectedSchool.province || '-' }}</td>
+                </tr>
+                <tr>
+                  <td>特色标签</td>
+                  <td>{{ selectedSchool.tags || '-' }}</td>
+                </tr>
+                <tr>
+                  <td>联系电话</td>
+                  <td>{{ selectedSchool.phone || '-' }}</td>
+                </tr>
+                <tr>
+                  <td>学校官网</td>
+                  <td>
+                    <a v-if="selectedSchool.website" :href="selectedSchool.website" target="_blank">
+                      {{ selectedSchool.website }}
+                    </a>
+                    <span v-else>-</span>
+                  </td>
+                </tr>
+              </table>
+            </template>
+            <el-empty v-else description="请选择学校" />
+          </div>
+
+          <!-- 2. 本科生招生 -->
+          <div v-show="activeTab === 'undergraduate'" class="tab-panel">
+            <template v-if="selectedSchool">
+              <h3>历年本科录取分数线</h3>
+              <div class="filter-row">
+                <el-select v-model="undergraduateFilters.province" placeholder="选择省份" @change="fetchUndergraduateScores">
+                  <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+                </el-select>
+                <el-select v-model="undergraduateFilters.category" placeholder="选择科类" @change="fetchUndergraduateScores">
+                  <el-option label="文科/历史类" value="文科" />
+                  <el-option label="理科/物理类" value="理科" />
+                </el-select>
+                <el-select v-model="undergraduateFilters.batch" placeholder="选择批次" @change="fetchUndergraduateScores">
+                  <el-option label="本科一批" value="本科一批" />
+                  <el-option label="本科批" value="本科批" />
+                  <el-option label="专科批" value="专科批" />
+                </el-select>
+              </div>
+
+              <el-table :data="undergraduateScores" stripe border>
+                <el-table-column prop="year" label="年份" width="80" />
+                <el-table-column prop="batch" label="录取批次" width="100" />
+                <el-table-column prop="enrollment_type" label="招生类型" width="100" />
+                <el-table-column label="最低分/最低位次" min-width="150">
+                  <template #default="{ row }">
+                    {{ row.min_score }}{{ row.min_rank ? `/${row.min_rank}` : '' }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="avg_score" label="平均分" width="80">
+                  <template #default="{ row }">
+                    {{ row.avg_score || '-' }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="provincial_control" label="省控线" width="80" />
+                <el-table-column prop="subject_requirement" label="选科要求" min-width="120" />
+              </el-table>
+              <div class="tip-text">① 以上本科分数数据来源：EOL教育在线</div>
+
+              <h3>各专业本科录取分数线</h3>
+              <div class="filter-row">
+                <el-select v-model="majorFilters.province" placeholder="选择省份" @change="fetchMajorScores">
+                  <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+                </el-select>
+                <el-select v-model="majorFilters.year" placeholder="选择年份" @change="fetchMajorScores">
+                  <el-option v-for="y in years" :key="y" :label="`${y}年`" :value="y" />
+                </el-select>
+                <el-select v-model="majorFilters.category" placeholder="选择科类" @change="fetchMajorScores">
+                  <el-option label="文科" value="文科" />
+                  <el-option label="理科" value="理科" />
+                </el-select>
+              </div>
+
+              <el-table :data="majorScores" stripe border>
+                <el-table-column prop="major_name" label="专业名称" min-width="200" />
+                <el-table-column prop="batch" label="录取批次" width="100" />
+                <el-table-column prop="avg_score" label="平均分" width="80">
+                  <template #default="{ row }">
+                    {{ row.avg_score || '-' }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="最低分/最低位次" min-width="150">
+                  <template #default="{ row }">
+                    {{ row.min_score }}{{ row.min_rank ? `/${row.min_rank}` : '' }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="major_group" label="专业组" width="100" />
+                <el-table-column prop="subject_requirement" label="选科要求" min-width="120" />
+              </el-table>
+            </template>
+            <el-empty v-else description="请选择学校" />
+          </div>
+
+          <!-- 3. 研究生招生 -->
+          <div v-show="activeTab === 'postgrad'" class="tab-panel">
+            <template v-if="selectedSchool">
+              <div class="pg-filter-row">
+                <span>选择年份：</span>
+                <el-select v-model="postgradFilters.year" @change="fetchPostgradInfo">
+                  <el-option v-for="y in years" :key="y" :label="`${y}年`" :value="y" />
+                </el-select>
+                <span>招生类型：</span>
+                <el-select v-model="postgradFilters.type" @change="postgradTypeChange">
+                  <el-option label="普通复试线" value="normal" />
+                  <el-option label="调剂信息" value="adjust" />
+                </el-select>
+              </div>
+
+              <!-- 普通复试分数线内容 -->
+              <div v-show="postgradFilters.type === 'normal'">
+                <h3>{{ selectedSchool.name }}{{ postgradFilters.year }}年硕士研究生招生复试基本分数线</h3>
+                <div class="text-block">
+                  {{ postgradInfo.important_notes || '北京大学硕士研究生复试基本分数线划线工作坚持质量为先、宁缺毋滥的原则，按学科门类划定。' }}
+                </div>
+
+                <h4>学术学位</h4>
+                <el-table :data="postgradReplyLines.filter(r => r.category_code)" stripe border>
+                  <el-table-column prop="category_name" label="学科门类" min-width="150">
+                    <template #default="{ row }">
+                      {{ row.category_name }} {{ row.category_code ? `[${row.category_code}]` : '' }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="politics" label="政治" width="80" />
+                  <el-table-column prop="foreign_language" label="外国语" width="80" />
+                  <el-table-column prop="专业课1" label="专业课1" width="100" />
+                  <el-table-column prop="专业课2" label="专业课2" width="100" />
+                  <el-table-column prop="total_score" label="总分" width="80" />
+                  <el-table-column prop="remarks" label="备注" min-width="150" />
+                </el-table>
+
+                <div class="tip-text">
+                  发布单位：{{ selectedSchool.name }}研究生招生办公室 | 发布日期：{{ postgradInfo.registration_start || '-' }}
+                </div>
+              </div>
+
+              <!-- 调剂信息内容 -->
+              <div v-show="postgradFilters.type === 'adjust'">
+                <h3>{{ selectedSchool.name }}{{ postgradFilters.year }}年研究生调剂相关政策说明</h3>
+                <div class="text-block">
+                  <p><strong>1. 调剂基本要求：</strong>考生初试成绩须达到国家线及我校相关门类复试基本线，符合调入专业报考条件。</p>
+                  <p><strong>2. 调剂规则：</strong>校内调剂优先，跨院、跨门类调剂需满足专业相近、统考科目相同或相近。</p>
+                  <p><strong>3. 专项计划考生调剂：</strong>援藏计划、少干计划、士兵计划仅可在同类专项内进行调剂。</p>
+                  <p><strong>4. 调剂流程：</strong>研招网调剂系统开放后，考生填报志愿，招生院系择优遴选、组织复试录取。</p>
+                  <p><strong>5. 注意事项：</strong>最终调剂缺额、接收专业、截止时间以北大研招网及各院系官方通知为准。</p>
+                </div>
+              </div>
+            </template>
+            <el-empty v-else description="请选择学校" />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { Search } from '@element-plus/icons-vue'
+import { api } from '@/api/client'
 
-const router = useRouter()
+const schools = ref<any[]>([])
+const selectedSchool = ref<any>(null)
+const activeTab = ref('undergraduate')
 
-// 筛选表单
-const filterForm = reactive({
+const provinces = ['北京市', '上海市', '江苏省', '浙江省', '广东省', '河南省', '山东省', '山西省', '河北省', '四川省', '湖北省', '湖南省', '安徽省', '福建省', '江西省', '辽宁省', '吉林省', '黑龙江省']
+const years = [2024, 2023, 2022, 2021, 2020]
+
+const filters = reactive({
   name: '',
   type: '',
-  province: '',
-  level: ''
+  level: '',
+  province: ''
 })
 
-// 分页
-const currentPage = ref(1)
-const pageSize = ref(10)
-const total = ref(0)
+const undergraduateFilters = reactive({
+  province: '北京市',
+  category: '理科',
+  batch: '本科批'
+})
 
-// 数据
-const universitiesData = ref([
-  {
-    id: 1,
-    name: '清华大学',
-    province: '北京',
-    type: '985,211,doubleFirstClass',
-    level: '本科',
-    foundedYear: 1911,
-    studentCount: 40000
-  },
-  {
-    id: 2,
-    name: '北京大学',
-    province: '北京',
-    type: '985,211,doubleFirstClass',
-    level: '本科',
-    foundedYear: 1898,
-    studentCount: 35000
-  },
-  {
-    id: 3,
-    name: '浙江大学',
-    province: '浙江',
-    type: '985,211,doubleFirstClass',
-    level: '本科',
-    foundedYear: 1897,
-    studentCount: 50000
-  },
-  {
-    id: 4,
-    name: '复旦大学',
-    province: '上海',
-    type: '985,211,doubleFirstClass',
-    level: '本科',
-    foundedYear: 1905,
-    studentCount: 30000
-  },
-  {
-    id: 5,
-    name: '上海交通大学',
-    province: '上海',
-    type: '985,211,doubleFirstClass',
-    level: '本科',
-    foundedYear: 1896,
-    studentCount: 38000
+const majorFilters = reactive({
+  province: '北京市',
+  year: 2021,
+  category: '文科'
+})
+
+const postgradFilters = reactive({
+  year: 2025,
+  type: 'normal'
+})
+
+const undergraduateScores = ref<any[]>([])
+const majorScores = ref<any[]>([])
+const postgradInfo = ref<any>({})
+const postgradReplyLines = ref<any[]>([])
+
+const fetchSchools = async () => {
+  try {
+    const params: any = {}
+    if (filters.name) params.name = filters.name
+    if (filters.type) params.type = filters.type
+    if (filters.level) params.level = filters.level
+    if (filters.province) params.province = filters.province
+
+    const response = await api.get('/api/schools', { params })
+    if (response.data.success) {
+      schools.value = response.data.data
+      if (schools.value.length > 0 && !selectedSchool.value) {
+        selectSchool(schools.value[0])
+      }
+    }
+  } catch (error) {
+    console.error('获取学校列表失败:', error)
   }
-])
-
-total.value = universitiesData.value.length
-
-// 搜索
-const search = () => {
-  // 实际项目中这里会调用API获取数据
-  console.log('搜索条件:', filterForm)
-  // 模拟搜索结果
-  currentPage.value = 1
 }
 
-// 重置
-const reset = () => {
-  Object.assign(filterForm, {
-    name: '',
-    type: '',
-    province: '',
-    level: ''
-  })
+const selectSchool = async (school: any) => {
+  selectedSchool.value = school
+  activeTab.value = 'undergraduate'
+  await Promise.all([
+    fetchUndergraduateScores(),
+    fetchMajorScores(),
+    fetchPostgradInfo()
+  ])
 }
 
-// 查看详情
-const viewDetail = (id: number) => {
-  router.push(`/universities/${id}`)
+const fetchUndergraduateScores = async () => {
+  if (!selectedSchool.value) return
+  try {
+    const params = {
+      school_id: selectedSchool.value.id,
+      ...undergraduateFilters
+    }
+    const response = await api.get('/api/undergraduate/yearly', { params })
+    if (response.data.success) {
+      undergraduateScores.value = response.data.data
+    }
+  } catch (error) {
+    console.error('获取本科历年分数失败:', error)
+  }
 }
 
-// 添加到对比
-const addToCompare = (university: any) => {
-  console.log('添加到对比:', university)
-  // 实际项目中这里会将高校添加到对比列表
+const fetchMajorScores = async () => {
+  if (!selectedSchool.value) return
+  try {
+    const params = {
+      school_id: selectedSchool.value.id,
+      ...majorFilters
+    }
+    const response = await api.get('/api/undergraduate/major', { params })
+    if (response.data.success) {
+      majorScores.value = response.data.data
+    }
+  } catch (error) {
+    console.error('获取专业分数失败:', error)
+  }
 }
 
-// 分页处理
-const handleSizeChange = (size: number) => {
-  pageSize.value = size
+const fetchPostgradInfo = async () => {
+  if (!selectedSchool.value) return
+  try {
+    const params = {
+      school_id: selectedSchool.value.id,
+      year: postgradFilters.year
+    }
+    const response = await api.get('/api/postgraduate/info', { params })
+    if (response.data.success) {
+      postgradInfo.value = response.data.data || {}
+    }
+    await fetchPostgradReplyLines()
+  } catch (error) {
+    console.error('获取研究生信息失败:', error)
+  }
 }
 
-const handleCurrentChange = (current: number) => {
-  currentPage.value = current
+const fetchPostgradReplyLines = async () => {
+  if (!selectedSchool.value) return
+  try {
+    const params = {
+      school_id: selectedSchool.value.id,
+      year: postgradFilters.year
+    }
+    const response = await api.get('/api/postgraduate/reply-lines', { params })
+    if (response.data.success) {
+      postgradReplyLines.value = response.data.data
+    }
+  } catch (error) {
+    console.error('获取研究生复试线失败:', error)
+  }
 }
 
-// 组件挂载
+const postgradTypeChange = () => {
+  // 类型切换时的处理
+}
+
+const handleSearch = () => {
+  fetchSchools()
+}
+
 onMounted(() => {
-  // 实际项目中这里会初始化数据
-  console.log('UniversitiesView mounted')
+  fetchSchools()
 })
 </script>
 
 <style scoped>
-.universities-view {
-  min-height: 100vh;
+.universities-page {
+  padding: 30px;
   background-color: #f5f7fa;
 }
 
-.el-header {
-  background-color: #409eff;
-  color: white;
-  text-align: center;
-  padding: 40px 0;
-  margin-bottom: 20px;
+.top-search-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
 }
 
-.el-header h1 {
-  margin: 0 0 10px 0;
-  font-size: 28px;
-}
-
-.el-header p {
-  margin: 0;
-  font-size: 16px;
-  opacity: 0.9;
-}
-
-.filter-card {
-  margin-bottom: 20px;
-}
-
-.card-header {
+.search-item {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-item :deep(.el-input__wrapper),
+.search-item :deep(.el-select) {
+  height: 50px;
+}
+
+.search-item :deep(.el-input__inner),
+.search-item :deep(.el-select__inner) {
+  height: 50px;
+  line-height: 50px;
+  font-size: 16px;
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 30px;
+}
+
+.school-list-box {
+  background: #fff;
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+.school-list-title {
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.school-item {
+  padding: 12px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.school-item:hover {
+  background-color: #e8f0fe;
+}
+
+.school-item.active {
+  background-color: #4096ff;
+  color: #fff;
+}
+
+.school-tag {
+  font-size: 14px;
+  margin-left: 8px;
+  color: #999;
+}
+
+.school-item.active .school-tag {
+  color: #fff;
+}
+
+.content-box {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.tab-nav {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 18px 0;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  background: #eee;
+  transition: all 0.2s;
+}
+
+.tab-item.active {
+  background: #4096ff;
+  color: #fff;
+}
+
+.tab-content {
+  padding: 25px;
+}
+
+.tab-panel h3 {
+  font-size: 20px;
+  margin: 25px 0 18px;
+  color: #333;
+  padding-left: 12px;
+  border-left: 5px solid #4096ff;
+}
+
+.tab-panel h4 {
+  font-size: 16px;
+  margin: 20px 0 15px;
+  color: #666;
+}
+
+.intro-box {
+  line-height: 1.8;
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.info-table {
+  width: 100%;
+  margin: 15px 0;
+  border-collapse: collapse;
+}
+
+.info-table td {
+  padding: 10px 12px;
+  border: 1px solid #eee;
+  font-size: 15px;
+}
+
+.info-table td:first-child {
+  width: 140px;
+  background: #f7f9fc;
+  font-weight: 500;
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.pg-filter-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
   align-items: center;
 }
 
-.result-count {
+.pg-filter-row span {
   font-size: 14px;
-  color: #606266;
 }
 
-.filter-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.tip-text {
+  font-size: 13px;
+  color: #888;
+  margin: 8px 0 20px;
 }
 
-.results-card {
-  margin-top: 20px;
+.text-block {
+  line-height: 1.8;
+  font-size: 15px;
+  margin-bottom: 15px;
 }
 
-.pagination {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+.text-block p {
+  margin-bottom: 10px;
+}
+
+a {
+  color: #4096ff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1200px) {
+  .top-search-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+
+  .school-list-box {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-item {
+    font-size: 18px;
+    padding: 15px 0;
+  }
 }
 </style>
