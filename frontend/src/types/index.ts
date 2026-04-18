@@ -5,7 +5,7 @@ export interface University {
   province: string;
   city: string;
   type: '综合' | '理工' | '师范' | '农林' | '医药' | '财经' | '政法' | '艺术' | '体育' | '民族' | '语言' | '其他';
-  level: '985' | '211' | '双一流' | '普通本科' | '专科';
+  level: string;
   website?: string;
   description?: string;
   created_at: string;

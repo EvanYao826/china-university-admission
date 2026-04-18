@@ -34,6 +34,61 @@ router.get('/schools', (req: Request, res: Response<ApiResponse<any>>) => {
   }
 });
 
+// 获取省份可用的类别列表
+router.get('/schools/categories', (req: Request, res: Response<ApiResponse<any>>) => {
+  try {
+    const province = req.query.province as string;
+    if (!province) {
+      res.status(400).json({
+        success: false,
+        message: '省份参数不能为空'
+      });
+      return;
+    }
+
+    const categories = schoolRepo.getCategoriesByProvince(province);
+    res.json({
+      success: true,
+      data: categories
+    });
+  } catch (error) {
+    console.error('获取省份可用类别失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取省份可用类别失败'
+    });
+  }
+});
+
+// 获取省份和类别可用的批次列表
+router.get('/schools/batches', (req: Request, res: Response<ApiResponse<any>>) => {
+  try {
+    const province = req.query.province as string;
+    const category = req.query.category as string;
+    const universityId = req.query.university_id ? parseInt(req.query.university_id as string) : undefined;
+
+    if (!province || !category) {
+      res.status(400).json({
+        success: false,
+        message: '省份和类别参数不能为空'
+      });
+      return;
+    }
+
+    const batches = schoolRepo.getBatchesByProvinceAndCategory(province, category, universityId);
+    res.json({
+      success: true,
+      data: batches
+    });
+  } catch (error) {
+    console.error('获取省份可用批次失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取省份可用批次失败'
+    });
+  }
+});
+
 router.get('/schools/:id', (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const id = parseInt(req.params.id);

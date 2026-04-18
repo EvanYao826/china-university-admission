@@ -33,8 +33,8 @@ export class UniversityRepository {
     }
 
     if (level) {
-      conditions.push('level = ?');
-      values.push(level);
+      conditions.push('level LIKE ?');
+      values.push(`%${level}%`);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

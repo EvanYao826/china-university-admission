@@ -56,7 +56,7 @@
             @click="selectSchool(school)"
           >
             {{ school.name }}
-            <span class="school-tag">{{ school.tags || school.level }}</span>
+            <span class="school-tag">{{ getSchoolLevel(school.level) }}</span>
           </div>
           <el-empty v-if="schools.length === 0" description="暂无数据" />
         </div>
@@ -99,27 +99,36 @@
                 <h3>基本信息</h3>
                 <table class="info-table">
                   <tbody>
-                    <tr>
-                      <td>学校类型</td>
-                      <td>{{ selectedSchool.type || '-' }}</td>
-                    </tr>
-                    <tr>
-                      <td>学校层次</td>
-                      <td>{{ selectedSchool.level || '-' }}</td>
-                    </tr>
-                    <tr>
-                      <td>所在省份</td>
-                      <td>{{ selectedSchool.province || '-' }}</td>
-                    </tr>
-                    <tr>
-                      <td>所在城市</td>
-                      <td>{{ selectedSchool.city || '-' }}</td>
-                    </tr>
-                    <tr>
-                      <td>特色标签</td>
-                      <td>{{ selectedSchool.tags || '-' }}</td>
-                    </tr>
-                  </tbody>
+                      <tr>
+                        <td>学校类型</td>
+                        <td>{{ selectedSchool.type || '-' }}</td>
+                      </tr>
+                      <tr>
+                        <td>学校层次</td>
+                        <td>{{ selectedSchool.level || '-' }}</td>
+                      </tr>
+                      <tr>
+                        <td>所在省份</td>
+                        <td>{{ selectedSchool.province || '-' }}</td>
+                      </tr>
+                      <tr>
+                        <td>所在城市</td>
+                        <td>{{ selectedSchool.city || '-' }}</td>
+                      </tr>
+                      <tr>
+                        <td>特色标签</td>
+                        <td>{{ selectedSchool.tags || '-' }}</td>
+                      </tr>
+                      <tr>
+                        <td>学校官网</td>
+                        <td>
+                          <a v-if="selectedSchool.website" :href="selectedSchool.website" target="_blank" class="website-link">
+                            {{ selectedSchool.website }}
+                          </a>
+                          <span v-else>-</span>
+                        </td>
+                      </tr>
+                    </tbody>
                 </table>
               </template>
               <el-empty v-else description="请选择学校" />
@@ -131,18 +140,14 @@
               <template v-if="selectedSchool">
                 <h3>历年本科录取分数线</h3>
                 <div class="filter-row">
-                  <el-select v-model="undergraduateFilters.province" placeholder="选择省份" @change="fetchUndergraduateScores">
+                  <el-select v-model="undergraduateFilters.province" placeholder="选择省份" @change="async (value) => { await fetchAvailableCategories(value); fetchUndergraduateScores(); }">
                     <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
                   </el-select>
-                  <el-select v-model="undergraduateFilters.category" placeholder="选择科类" @change="fetchUndergraduateScores">
-                    <el-option label="文科/历史类" value="文科" />
-                    <el-option label="理科/物理类" value="理科" />
-                    <el-option label="物理类" value="物理类" />
-                    <el-option label="综合改革" value="综合改革" />
+                  <el-select v-model="undergraduateFilters.category" placeholder="选择科类" @change="async (value) => { await fetchAvailableBatches(undergraduateFilters.province, value); fetchUndergraduateScores(); }">
+                    <el-option v-for="c in availableCategories" :key="c" :label="c" :value="c" />
                   </el-select>
                   <el-select v-model="undergraduateFilters.batch" placeholder="选择批次" @change="fetchUndergraduateScores">
-                    <el-option label="本科一批" value="本科一批" />
-                    <el-option label="本科批" value="本科批" />
+                    <el-option v-for="b in availableBatches" :key="b" :label="b" :value="b" />
                   </el-select>
                 </div>
 
@@ -150,6 +155,7 @@
                   <el-table-column prop="year" label="年份" width="80" />
                   <el-table-column prop="batch" label="录取批次" width="100" />
                   <el-table-column prop="enrollment_type" label="招生类型" width="100" />
+                  <el-table-column v-if="showProfessionalGroupColumns" prop="professional_group" label="专业组" width="100" />
                   <el-table-column label="最低分/最低位次" min-width="150">
                     <template #default="{ row }">
                       {{ row.min_score }}{{ row.min_rank ? `/${row.min_rank}` : '' }}
@@ -161,28 +167,26 @@
                     </template>
                   </el-table-column>
                   <el-table-column prop="provincial_control_line" label="省控线" width="80" />
-                  <el-table-column prop="subject_requirements" label="选科要求" min-width="120" />
+                  <el-table-column v-if="showProfessionalGroupColumns" prop="subject_requirements" label="选科要求" min-width="120" />
                 </el-table>
 
                 <h3>各专业本科录取分数线</h3>
                 <div class="filter-row">
-                  <el-select v-model="majorFilters.province" placeholder="选择省份" @change="fetchMajorScores">
+                  <el-select v-model="majorFilters.province" placeholder="选择省份" @change="async (value) => { await fetchAvailableCategories(value); fetchMajorScores(); }">
                     <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
                   </el-select>
                   <el-select v-model="majorFilters.year" placeholder="选择年份" @change="fetchMajorScores">
                     <el-option v-for="y in years" :key="y" :label="`${y}年`" :value="y" />
                   </el-select>
                   <el-select v-model="majorFilters.category" placeholder="选择科类" @change="fetchMajorScores">
-                    <el-option label="文科" value="文科" />
-                    <el-option label="理科" value="理科" />
-                    <el-option label="物理类" value="物理类" />
-                    <el-option label="综合改革" value="综合改革" />
+                    <el-option v-for="c in availableCategories" :key="c" :label="c" :value="c" />
                   </el-select>
                 </div>
 
                 <el-table :data="majorScores" stripe border>
                   <el-table-column prop="major" label="专业名称" min-width="200" />
                   <el-table-column prop="batch" label="录取批次" width="100" />
+                  <el-table-column v-if="showProfessionalGroupColumns" prop="professional_group" label="专业组" width="100" />
                   <el-table-column prop="avg_score" label="平均分" width="80">
                     <template #default="{ row }">
                       {{ row.avg_score || '-' }}
@@ -193,8 +197,7 @@
                       {{ row.min_score }}{{ row.min_rank ? `/${row.min_rank}` : '' }}
                     </template>
                   </el-table-column>
-                  <el-table-column prop="professional_group" label="专业组" width="100" />
-                  <el-table-column prop="subject_requirements" label="选科要求" min-width="120" />
+                  <el-table-column v-if="showProfessionalGroupColumns" prop="subject_requirements" label="选科要求" min-width="120" />
                 </el-table>
               </template>
               <el-empty v-else description="请选择学校" />
@@ -256,7 +259,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { api } from '@/api/client'
 
@@ -274,6 +277,16 @@ const filters = reactive({
   province: ''
 })
 
+const getSchoolLevel = (level: string | undefined) => {
+  if (!level) return ''
+  // 提取985、211、双一流
+  const levels = []
+  if (level.includes('985')) levels.push('985')
+  if (level.includes('211')) levels.push('211')
+  if (level.includes('双一流')) levels.push('双一流')
+  return levels.join(' ')
+}
+
 const undergraduateFilters = reactive({
   province: '北京',
   category: '物理类',
@@ -289,6 +302,15 @@ const majorFilters = reactive({
 const postgradFilters = reactive({
   year: 2025,
   type: 'normal'
+})
+
+// 存储可用的类别和批次列表
+const availableCategories = ref<string[]>([])
+const availableBatches = ref<string[]>([])
+
+// 判断是否显示专业组和选科要求列
+const showProfessionalGroupColumns = computed(() => {
+  return undergraduateFilters.category === '综合改革'
 })
 
 const undergraduateScores = ref<any[]>([])
@@ -310,8 +332,19 @@ const fetchSchools = async () => {
     if (response.data.success) {
       schools.value = response.data.data
       console.log('获取到的学校数量:', schools.value.length)
-      if (schools.value.length > 0 && !selectedSchool.value) {
-        selectSchool(schools.value[0])
+      if (schools.value.length > 0) {
+        if (!selectedSchool.value) {
+          selectSchool(schools.value[0])
+        } else {
+          // 检查当前选中的学校是否在新的列表中
+          const schoolExists = schools.value.some(school => school.id === selectedSchool.value.id)
+          if (!schoolExists) {
+            selectedSchool.value = null
+          }
+        }
+      } else {
+        // 当列表为空时，清空选中的学校
+        selectedSchool.value = null
       }
     }
   } catch (error) {
@@ -327,6 +360,49 @@ const selectSchool = async (school: any) => {
     fetchMajorScores(),
     fetchPostgradInfo()
   ])
+}
+
+// 获取省份可用的类别列表
+const fetchAvailableCategories = async (province: string) => {
+  try {
+    const response = await api.get('/api/schools/categories', { province })
+    if (response.data.success) {
+      availableCategories.value = response.data.data
+      // 如果当前选中的类别不在可用列表中，重置为第一个类别
+      if (availableCategories.value.length > 0 && !availableCategories.value.includes(undergraduateFilters.category)) {
+        undergraduateFilters.category = availableCategories.value[0]
+        // 同时更新专业筛选的类别
+        majorFilters.category = availableCategories.value[0]
+        // 获取新的批次列表
+        await fetchAvailableBatches(province, availableCategories.value[0])
+      }
+    }
+  } catch (error) {
+    console.error('获取省份可用类别失败:', error)
+  }
+}
+
+// 获取省份和类别可用的批次列表
+const fetchAvailableBatches = async (province: string, category: string) => {
+  try {
+    const params = {
+      province,
+      category
+    }
+    if (selectedSchool.value) {
+      params.university_id = selectedSchool.value.id
+    }
+    const response = await api.get('/api/schools/batches', params)
+    if (response.data.success) {
+      availableBatches.value = response.data.data
+      // 如果当前选中的批次不在可用列表中，重置为第一个批次
+      if (availableBatches.value.length > 0 && !availableBatches.value.includes(undergraduateFilters.batch)) {
+        undergraduateFilters.batch = availableBatches.value[0]
+      }
+    }
+  } catch (error) {
+    console.error('获取省份可用批次失败:', error)
+  }
 }
 
 const fetchUndergraduateScores = async () => {
@@ -385,8 +461,14 @@ const handleSearch = () => {
   fetchSchools()
 }
 
-onMounted(() => {
+onMounted(async () => {
   fetchSchools()
+  // 初始化获取当前省份的可用类别
+  await fetchAvailableCategories(undergraduateFilters.province)
+  // 初始化获取当前省份和类别的可用批次
+  if (availableCategories.value.length > 0) {
+    await fetchAvailableBatches(undergraduateFilters.province, availableCategories.value[0])
+  }
 })
 </script>
 

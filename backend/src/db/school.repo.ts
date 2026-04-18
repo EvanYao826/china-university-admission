@@ -70,8 +70,8 @@ export class SchoolRepository {
       params.push(filters.type);
     }
     if (filters.level) {
-      query += ' AND level = ?';
-      params.push(filters.level);
+      query += ' AND level LIKE ?';
+      params.push(`%${filters.level}%`);
     }
     if (filters.province) {
       query += ' AND province = ?';
@@ -204,6 +204,39 @@ export class SchoolRepository {
       admission.source_url
     );
     return result.lastInsertRowid as number;
+  }
+
+  // 获取省份可用的类别列表
+  getCategoriesByProvince(province: string): string[] {
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT category 
+      FROM undergraduate_admissions 
+      WHERE province = ? 
+      ORDER BY category
+    `);
+    const result = stmt.all(province) as { category: string }[];
+    return result.map(row => row.category).filter(Boolean);
+  }
+
+  // 获取省份可用的批次列表
+  getBatchesByProvinceAndCategory(province: string, category: string, universityId?: number): string[] {
+    let query = `
+      SELECT DISTINCT batch 
+      FROM undergraduate_admissions 
+      WHERE province = ? AND category = ? 
+    `;
+    const params: any[] = [province, category];
+
+    if (universityId) {
+      query += ' AND university_id = ? ';
+      params.push(universityId);
+    }
+
+    query += ' ORDER BY batch';
+
+    const stmt = this.db.prepare(query);
+    const result = stmt.all(...params) as { batch: string }[];
+    return result.map(row => row.batch).filter(Boolean);
   }
 
   close(): void {
