@@ -78,61 +78,8 @@ export const api = {
   get: (url: string, params?: any) =>
     apiClient.get<ApiResponse>(url, { params }),
 
-  universities: {
-    getUniversities: (params?: any) =>
-      apiClient.get<ApiResponse>('/api/universities', { params }),
-    getUniversityById: (id: number) =>
-      apiClient.get<ApiResponse>(`/api/universities/${id}`),
-    searchUniversities: (name: string, limit = 10) =>
-      apiClient.get<ApiResponse>(`/api/universities/search/${name}`, { params: { limit } }),
-    getFilterOptions: () =>
-      apiClient.get<ApiResponse>('/api/universities/options/filters'),
-    getStatistics: () =>
-      apiClient.get<ApiResponse>('/api/universities/statistics/summary'),
-    getProvinceStatistics: (province: string) =>
-      apiClient.get<ApiResponse>(`/api/universities/statistics/by-province/${province}`)
-  },
-
-  admissions: {
-    getGaokaoAdmissions: (universityId: number, params?: any) =>
-      apiClient.get<ApiResponse>(`/api/admissions/gaokao/${universityId}`, { params }),
-    getGraduateAdmissions: (universityId: number, params?: any) =>
-      apiClient.get<ApiResponse>(`/api/admissions/graduate/${universityId}`, { params }),
-    matchByScore: (params: {
-      province: string;
-      year: number;
-      category: string;
-      batch: string;
-      score: number;
-      limit?: number;
-    }) => apiClient.get<ApiResponse>('/api/admissions/score/match', { params }),
-    getAdmissionStatistics: (universityId: number) =>
-      apiClient.get<ApiResponse>(`/api/admissions/statistics/${universityId}`),
-    getAdmissionTrends: (universityId: number, province?: string, category?: string) =>
-      apiClient.get<ApiResponse>(`/api/admissions/trends/${universityId}`, { params: { province, category } }),
-    getProvinceAdmissions: (province: string, year?: number, category?: string, batch?: string) =>
-      apiClient.get<ApiResponse>(`/api/admissions/province/${province}`, { params: { year, category, batch } }),
-    getYearOptions: () =>
-      apiClient.get<ApiResponse>('/api/admissions/options/years'),
-    getProvinceOptions: () =>
-      apiClient.get<ApiResponse>('/api/admissions/options/provinces')
-  },
-
-  search: {
-    advancedSearch: (params?: any) =>
-      apiClient.get<ApiResponse>('/api/search/advanced', { params }),
-    getSuggestions: (query: string) =>
-      apiClient.get<ApiResponse>('/api/search/suggestions', { params: { q: query } }),
-    getPopularSearches: () =>
-      apiClient.get<ApiResponse>('/api/search/popular'),
-    getSearchStatistics: () =>
-      apiClient.get<ApiResponse>('/api/search/statistics')
-  },
-
-  system: {
-    healthCheck: () => apiClient.get('/api/health'),
-    getApiDocs: () => apiClient.get('/api')
-  }
+  post: (url: string, data?: any) =>
+    apiClient.post<ApiResponse>(url, data)
 };
 
 export default apiClient;

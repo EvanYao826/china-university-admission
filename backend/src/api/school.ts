@@ -60,9 +60,9 @@ router.get('/schools/:id', (req: Request, res: Response<ApiResponse<any>>) => {
   }
 });
 
-router.get('/undergraduate/yearly', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/undergraduate/admissions', (req: Request, res: Response<ApiResponse<any>>) => {
   try {
-    const schoolId = parseInt(req.query.school_id as string);
+    const universityId = parseInt(req.query.university_id as string);
     const filters = {
       province: req.query.province as string,
       year: req.query.year ? parseInt(req.query.year as string) : undefined,
@@ -70,81 +70,41 @@ router.get('/undergraduate/yearly', (req: Request, res: Response<ApiResponse<any
       batch: req.query.batch as string
     };
 
-    const scores = schoolRepo.getUndergraduateYearlyScores(schoolId, filters);
+    const admissions = schoolRepo.getUndergraduateAdmissions(universityId, filters);
 
     res.json({
       success: true,
-      data: scores
+      data: admissions
     });
   } catch (error) {
-    console.error('获取本科历年分数失败:', error);
+    console.error('获取本科录取数据失败:', error);
     res.status(500).json({
       success: false,
-      message: '获取本科历年分数失败'
+      message: '获取本科录取数据失败'
     });
   }
 });
 
-router.get('/undergraduate/major', (req: Request, res: Response<ApiResponse<any>>) => {
+router.get('/postgraduate/admissions', (req: Request, res: Response<ApiResponse<any>>) => {
   try {
-    const schoolId = parseInt(req.query.school_id as string);
+    const universityId = parseInt(req.query.university_id as string);
     const filters = {
-      province: req.query.province as string,
       year: req.query.year ? parseInt(req.query.year as string) : undefined,
-      category: req.query.category as string
+      degree_type: req.query.degree_type as string,
+      admission_type: req.query.admission_type as string
     };
 
-    const scores = schoolRepo.getUndergraduateMajorScores(schoolId, filters);
+    const admissions = schoolRepo.getPostgraduateAdmissions(universityId, filters);
 
     res.json({
       success: true,
-      data: scores
+      data: admissions
     });
   } catch (error) {
-    console.error('获取专业分数失败:', error);
+    console.error('获取研究生录取数据失败:', error);
     res.status(500).json({
       success: false,
-      message: '获取专业分数失败'
-    });
-  }
-});
-
-router.get('/postgraduate/info', (req: Request, res: Response<ApiResponse<any>>) => {
-  try {
-    const schoolId = parseInt(req.query.school_id as string);
-    const year = parseInt(req.query.year as string);
-
-    const info = schoolRepo.getPostgraduateInfo(schoolId, year);
-
-    res.json({
-      success: true,
-      data: info
-    });
-  } catch (error) {
-    console.error('获取研究生信息失败:', error);
-    res.status(500).json({
-      success: false,
-      message: '获取研究生信息失败'
-    });
-  }
-});
-
-router.get('/postgraduate/reply-lines', (req: Request, res: Response<ApiResponse<any>>) => {
-  try {
-    const schoolId = parseInt(req.query.school_id as string);
-    const year = parseInt(req.query.year as string);
-
-    const lines = schoolRepo.getPostgraduateReplyLines(schoolId, year);
-
-    res.json({
-      success: true,
-      data: lines
-    });
-  } catch (error) {
-    console.error('获取研究生复试线失败:', error);
-    res.status(500).json({
-      success: false,
-      message: '获取研究生复试线失败'
+      message: '获取研究生录取数据失败'
     });
   }
 });
