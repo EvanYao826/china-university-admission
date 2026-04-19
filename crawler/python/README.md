@@ -74,7 +74,7 @@ python main.py 140 --resume
 
 ```sql
 CREATE TABLE gaokao_admissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
     university_id INTEGER NOT NULL,
     year INTEGER NOT NULL,
     province TEXT NOT NULL,

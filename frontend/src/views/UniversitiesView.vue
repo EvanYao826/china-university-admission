@@ -267,7 +267,7 @@ const schools = ref<any[]>([])
 const selectedSchool = ref<any>(null)
 const activeTab = ref('intro')
 
-const provinces = ['北京', '上海', '江苏', '浙江', '广东', '河南', '山东', '山西', '河北', '四川', '湖北', '湖南', '安徽', '福建', '江西', '辽宁', '吉林', '黑龙江']
+const provinces = ['北京', '上海', '天津', '江苏', '浙江', '广东', '河南', '山东', '山西', '河北', '四川', '湖北', '湖南', '安徽', '福建', '江西', '辽宁', '吉林', '黑龙江']
 const years = [2024, 2023, 2022, 2021, 2020]
 
 const filters = reactive({

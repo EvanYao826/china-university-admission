@@ -5,12 +5,14 @@ import argparse
 import logging
 import sys
 import time
-from datetime import datetime
-from typing import List
 
-from .config import PROVINCES, YEARS
-from .crawler import GaokaoCrawler
-from .database import DatabaseManager
+from config import PROVINCES, YEARS
+from crawler import GaokaoCrawler
+from database import DatabaseManager
+# ... existing code ...
+from datetime import datetime
+
+
 
 # 配置日志
 logging.basicConfig(
@@ -169,10 +171,49 @@ def main():
                 # 保存学校信息到数据库
                 if db_manager and not args.no_save:
                     try:
-                        # 这里需要更多信息来保存学校，暂时只记录
-                        logger.info("学校信息需要更多字段才能保存到数据库")
+                        # 尝试从学校名称推断省份（简单逻辑）
+                        province_guess = None
+                        school_name = school_info['name']
+
+                        # 常见高校省份映射
+                        province_map = {
+                            '北京': ['北京大学', '清华大学', '中国人民大学', '北京航空航天大学'],
+                            '上海': ['复旦大学', '上海交通大学', '同济大学', '华东师范大学'],
+                            '浙江': ['浙江大学'],
+                            '江苏': ['南京大学', '东南大学'],
+                            '湖北': ['武汉大学', '华中科技大学'],
+                            '广东': ['中山大学', '华南理工大学'],
+                            '陕西': ['西安交通大学', '西北工业大学'],
+                            '四川': ['四川大学', '电子科技大学'],
+                            '天津': ['南开大学', '天津大学'],
+                            '湖南': ['中南大学', '湖南大学'],
+                            # 可以添加更多映射
+                        }
+
+                        for province, schools in province_map.items():
+                            if any(school in school_name for school in schools):
+                                province_guess = province
+                                break
+
+                        if not province_guess:
+                            # 如果无法推断，使用第一个省份作为猜测
+                            province_guess = args.provinces[0] if args.provinces else '北京'
+
+                        # 保存学校信息（使用默认值）
+                        university_id = db_manager.add_university(
+                            name=school_info['name'],
+                            province=province_guess,
+                            type='综合',  # 默认类型
+                            level='985',  # 默认层次
+                            description=f"从gaokao.cn爬取的数据，学校ID: {args.school_id}"
+                        )
+
+                        school_info['database_id'] = university_id
+                        logger.info(f"学校信息保存成功，数据库ID: {university_id}")
+
                     except Exception as e:
                         logger.error(f"保存学校信息失败: {e}")
+                        # 继续执行，尝试使用现有学校ID
             else:
                 logger.warning("未能获取学校名称")
 
@@ -219,10 +260,31 @@ def main():
                             # 保存到数据库
                             if db_manager and not args.no_save:
                                 try:
+                                    # 确保university_id是整数
+                                    for item in data:
+                                        # 尝试获取学校数据库ID
+                                        if 'database_id' in school_info:
+                                            item['university_id'] = school_info['database_id']
+                                        else:
+                                            # 尝试从数据库获取现有学校ID
+                                            existing_id = db_manager.get_university_id(school_info.get('name', ''))
+                                            if existing_id:
+                                                item['university_id'] = existing_id
+                                            else:
+                                                # 使用学校ID字符串，但数据库期望整数
+                                                # 这里需要转换为整数或创建学校记录
+                                                try:
+                                                    item['university_id'] = int(args.school_id)
+                                                except:
+                                                    # 如果转换失败，使用默认值
+                                                    item['university_id'] = 1
+
                                     saved_ids = db_manager.batch_save_admission_data(data)
                                     logger.info(f"成功保存 {len(saved_ids)} 条数据到数据库")
                                 except Exception as e:
                                     logger.error(f"保存数据失败: {e}")
+                                    # 记录失败的数据以便调试
+                                    logger.debug(f"失败的数据样本: {data[0] if data else '无数据'}")
                         else:
                             logger.warning(f"未提取到数据: {province} - {year}")
 

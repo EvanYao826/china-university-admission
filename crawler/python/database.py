@@ -5,7 +5,7 @@ import sqlite3
 import logging
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
-from .config import DATABASE_CONFIG
+from config import DATABASE_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class DatabaseManager:
         if self.connection:
             self.connection.rollback()
 
-    # 高校相关操作
+    # 高校相关操作 - 适配新表结构
     def get_university_id(self, name: str) -> Optional[int]:
         """根据高校名称获取ID"""
         query = "SELECT id FROM universities WHERE name = ?"
@@ -79,10 +79,10 @@ class DatabaseManager:
         result = cursor.fetchone()
         return result[0] if result else None
 
-    def add_university(self, name: str, province: str, city: str,
-                      type: str, level: str, website: str = None,
-                      description: str = None) -> int:
-        """添加高校信息"""
+    def add_university(self, name: str, province: str, type: str = None,
+                      level: str = None, city: str = None, tags: str = None,
+                      logo_url: str = None, description: str = None) -> int:
+        """添加高校信息 - 适配新表结构"""
         # 检查是否已存在
         existing_id = self.get_university_id(name)
         if existing_id:
@@ -90,47 +90,53 @@ class DatabaseManager:
             return existing_id
 
         query = """
-        INSERT INTO universities (name, province, city, type, level, website, description, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO universities (name, province, type, level, city, tags, logo_url, description, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        params = (name, province, city, type, level, website, description, datetime.now())
+        params = (name, province, type, level, city, tags, logo_url, description, datetime.now())
 
         cursor = self.execute_query(query, params)
         self.commit()
         logger.info(f"添加高校成功: {name} (ID: {cursor.lastrowid})")
         return cursor.lastrowid
 
-    # 录取数据相关操作
-    def save_admission_data(self, data: Dict[str, Any]) -> int:
-        """保存录取数据"""
+    # 本科录取数据相关操作 - 适配新表结构
+    def save_undergraduate_admission_data(self, data: Dict[str, Any]) -> int:
+        """保存本科录取数据 - 适配新表结构"""
         query = """
-        INSERT OR REPLACE INTO gaokao_admissions
-        (university_id, year, province, category, batch, min_score, avg_score, max_score,
-         min_rank, avg_rank, max_rank, admission_count, major, notes, updated_at)
+        INSERT OR REPLACE INTO undergraduate_admissions
+        (university_id, province, year, category, batch, enrollment_type, major,
+         min_score, min_rank, avg_score, provincial_control_line,
+         subject_requirements, professional_group, source_url, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
         params = (
             data['university_id'],
-            data['year'],
             data['province'],
-            data['category'],
-            data['batch'],
-            data.get('min_score'),
-            data.get('avg_score'),
-            data.get('max_score'),
-            data.get('min_rank'),
-            data.get('avg_rank'),
-            data.get('max_rank'),
-            data.get('admission_count'),
+            data['year'],
+            data.get('category'),
+            data.get('batch'),
+            data.get('enrollment_type'),
             data.get('major'),
-            data.get('notes'),
+            data.get('min_score'),
+            data.get('min_rank'),
+            data.get('avg_score'),
+            data.get('provincial_control_line'),
+            data.get('subject_requirements'),
+            data.get('professional_group'),
+            data.get('source_url'),
             datetime.now()
         )
 
         cursor = self.execute_query(query, params)
         self.commit()
         return cursor.lastrowid
+
+    # 兼容旧接口
+    def save_admission_data(self, data: Dict[str, Any]) -> int:
+        """兼容旧接口，转发到新接口"""
+        return self.save_undergraduate_admission_data(data)
 
     def batch_save_admission_data(self, data_list: List[Dict[str, Any]]) -> List[int]:
         """批量保存录取数据"""
@@ -145,22 +151,40 @@ class DatabaseManager:
         return ids
 
     def check_data_exists(self, university_id: int, year: int,
-                         province: str, category: str, batch: str,
-                         major: str = None) -> bool:
-        """检查数据是否已存在"""
-        query = """
-        SELECT COUNT(*) FROM gaokao_admissions
-        WHERE university_id = ? AND year = ? AND province = ?
-        AND category = ? AND batch = ? AND major = ?
-        """
-        params = (university_id, year, province, category, batch, major)
+                         province: str, category: str = None, batch: str = None,
+                         major: str = None, enrollment_type: str = None) -> bool:
+        """检查数据是否已存在 - 适配新表结构"""
+        conditions = ["university_id = ?", "year = ?", "province = ?"]
+        params = [university_id, year, province]
 
-        cursor = self.execute_query(query, params)
+        if category:
+            conditions.append("category = ?")
+            params.append(category)
+
+        if batch:
+            conditions.append("batch = ?")
+            params.append(batch)
+
+        if major:
+            conditions.append("major = ?")
+            params.append(major)
+
+        if enrollment_type:
+            conditions.append("enrollment_type = ?")
+            params.append(enrollment_type)
+
+        where_clause = " AND ".join(conditions)
+        query = f"""
+        SELECT COUNT(*) FROM undergraduate_admissions
+        WHERE {where_clause}
+        """
+
+        cursor = self.execute_query(query, tuple(params))
         count = cursor.fetchone()[0]
         return count > 0
 
     def get_admission_stats(self, university_id: int = None, year: int = None) -> Dict[str, Any]:
-        """获取录取数据统计"""
+        """获取录取数据统计 - 适配新表结构"""
         conditions = []
         params = []
 
@@ -181,7 +205,7 @@ class DatabaseManager:
             COUNT(DISTINCT year) as year_count,
             MIN(year) as min_year,
             MAX(year) as max_year
-        FROM gaokao_admissions
+        FROM undergraduate_admissions
         WHERE {where_clause}
         """
 
