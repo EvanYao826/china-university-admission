@@ -103,7 +103,7 @@
 3. **填写数据**：按照模板格式填写录取数据
 4. **提交数据**：
    - 方式一：提交Pull Request
-   - 方式二：发送邮件至 \[[2869018789@qq.com](mailto:your-email@example.com)]
+   - 方式二：发送邮件至 [2869018789@qq.com](mailto:2869018789@qq.com)
 
 详细贡献指南请查看 [CONTRIBUTING.md](CONTRIBUTING.md)（待创建）
 
@@ -148,8 +148,8 @@ China-University-Admission/
 
 ## 📞 联系方式
 
-- 项目地址：[https://github.com/\[EvanYao826\]/china-university-admission](https://github.com/\[你的用户名]/China-University-Admission)
-- 问题反馈：[Issues](https://github.com/\[你的用户名]/China-University-Admission/issues)
+- 项目地址：[https://github.com/\EvanYao826\/china-university-admission](https://github.com/\[EvanYao826]/China-University-Admission)
+- 问题反馈：[Issues](https://github.com/\[EvanYao826]/China-University-Admission/issues)
 
 ***
 
