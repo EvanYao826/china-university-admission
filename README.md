@@ -148,8 +148,8 @@ China-University-Admission/
 
 ## 📞 联系方式
 
-- 项目地址：[https://github.com/\EvanYao826\/china-university-admission](https://github.com/\[EvanYao826]/China-University-Admission)
-- 问题反馈：[Issues](https://github.com/\[EvanYao826]/China-University-Admission/issues)
+- 项目地址：[https://github.com/\EvanYao826\/china-university-admission](https://github.com/\[EvanYao826]/china-university-admission)
+- 问题反馈：[Issues](https://github.com/\[EvanYao826]/china-university-admission/issues)
 
 ***
 
