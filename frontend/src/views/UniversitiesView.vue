@@ -493,23 +493,61 @@ onMounted(async () => {
 }
 
 .search-item :deep(.el-input__wrapper),
-.search-item :deep(.el-select) {
-  height: 50px;
-}
+  .search-item :deep(.el-select) {
+    height: 50px;
+    border-radius: 8px;
+    border: 1px solid #e4e7ed;
+    transition: all 0.3s ease;
+  }
 
-.search-item :deep(.el-input__inner),
-.search-item :deep(.el-select__inner) {
-  height: 50px;
-  line-height: 50px;
-  font-size: 16px;
-}
+  .search-item :deep(.el-input__wrapper):hover,
+  .search-item :deep(.el-select):hover {
+    border-color: #4096ff;
+    box-shadow: 0 0 0 2px rgba(64, 150, 255, 0.2);
+  }
+
+  .search-item :deep(.el-input__wrapper.is-focus),
+  .search-item :deep(.el-select.is-focus) {
+    border-color: #4096ff;
+    box-shadow: 0 0 0 2px rgba(64, 150, 255, 0.2);
+  }
+
+  .search-item :deep(.el-input__inner),
+  .search-item :deep(.el-select__inner) {
+    height: 50px;
+    line-height: 50px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  .search-item :deep(.el-select-dropdown) {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e4e7ed;
+  }
+
+  .search-item :deep(.el-select-dropdown__item) {
+    padding: 10px 15px;
+    transition: all 0.2s ease;
+  }
+
+  .search-item :deep(.el-select-dropdown__item:hover) {
+    background-color: #f0f5ff;
+    color: #4096ff;
+  }
+
+  .search-item :deep(.el-select-dropdown__item.selected) {
+    background-color: #e6f7ff;
+    color: #4096ff;
+  }
 
 .main-container {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 30px;
   min-height: 600px;
-  height: 600px;
+  height: auto;
+  min-height: 80vh;
 }
 
 .school-list-box {
@@ -517,7 +555,9 @@ onMounted(async () => {
   border-radius: 6px;
   padding: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  height: 100%;
+  height: 80vh;
+  min-height: 600px;
+  max-height: 800px;
   display: flex;
   flex-direction: column;
 }
@@ -533,6 +573,36 @@ onMounted(async () => {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+}
+
+/* 滚动条样式 */
+.school-list-content::-webkit-scrollbar,
+.tab-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.school-list-content::-webkit-scrollbar-track,
+.tab-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.school-list-content::-webkit-scrollbar-thumb,
+.tab-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.school-list-content::-webkit-scrollbar-thumb:hover,
+.tab-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.school-list-content::-webkit-scrollbar-thumb:active,
+.tab-content::-webkit-scrollbar-thumb:active {
+  background: #888;
 }
 
 .school-item {
@@ -568,7 +638,7 @@ onMounted(async () => {
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   overflow: hidden;
-  height: 100%;
+  min-height: 600px;
   display: flex;
   flex-direction: column;
 }
