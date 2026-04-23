@@ -11,36 +11,36 @@
       </div>
       <div class="search-item">
         <label>学校类型</label>
-        <el-select v-model="filters.type" placeholder="请选择类型" clearable @change="fetchSchools">
-                    <el-option label="综合类" value="综合" />
-                    <el-option label="理工类" value="理工" />
-                    <el-option label="师范类" value="师范" />
-                    <el-option label="医药类" value="医药" />
-                    <el-option label="农林类" value="农林" />
-                    <el-option label="财经类" value="财经" />
-                    <el-option label="政法类" value="政法" />
-                    <el-option label="艺术类" value="艺术" />
-                    <el-option label="体育类" value="体育" />
-                    <el-option label="民族类" value="民族" />
-                    <el-option label="语言类" value="语言" />
-                    <el-option label="其他" value="其他" />
-                  </el-select>
+        <el-select v-model="filters.type" placeholder="请选择类型" clearable @change="fetchSchools" style="width: 100%;">
+          <el-option label="综合类" value="综合" />
+          <el-option label="理工类" value="理工" />
+          <el-option label="师范类" value="师范" />
+          <el-option label="医药类" value="医药" />
+          <el-option label="农林类" value="农林" />
+          <el-option label="财经类" value="财经" />
+          <el-option label="政法类" value="政法" />
+          <el-option label="艺术类" value="艺术" />
+          <el-option label="体育类" value="体育" />
+          <el-option label="民族类" value="民族" />
+          <el-option label="语言类" value="语言" />
+          <el-option label="其他" value="其他" />
+        </el-select>
       </div>
       <div class="search-item">
         <label>学校层次</label>
-        <el-select v-model="filters.level" placeholder="请选择层次" clearable @change="fetchSchools">
-                    <el-option label="985工程" value="985" />
-                    <el-option label="211工程" value="211" />
-                    <el-option label="双一流" value="双一流" />
-                    <el-option label="普通本科" value="普通本科" />
-                    <el-option label="专科" value="专科" />
-                  </el-select>
+        <el-select v-model="filters.level" placeholder="请选择层次" clearable @change="fetchSchools" style="width: 100%;">
+          <el-option label="985工程" value="985" />
+          <el-option label="211工程" value="211" />
+          <el-option label="双一流" value="双一流" />
+          <el-option label="普通本科" value="普通本科" />
+          <el-option label="专科" value="专科" />
+        </el-select>
       </div>
       <div class="search-item">
         <label>所在省份</label>
-        <el-select v-model="filters.province" placeholder="请选择省份" clearable @change="fetchSchools">
-                    <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
-                  </el-select>
+        <el-select v-model="filters.province" placeholder="请选择省份" clearable @change="fetchSchools" style="width: 100%;">
+          <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+        </el-select>
       </div>
     </div>
 
@@ -267,7 +267,7 @@ const schools = ref<any[]>([])
 const selectedSchool = ref<any>(null)
 const activeTab = ref('intro')
 
-const provinces = ['北京', '上海', '天津', '江苏', '浙江', '广东', '河南', '山东', '山西', '河北', '四川', '湖北', '湖南', '安徽', '福建', '江西', '辽宁', '吉林', '黑龙江']
+const provinces = ['北京', '上海', '天津', '重庆', '江苏', '浙江', '广东', '河南', '山东', '山西', '河北', '四川', '湖北', '湖南', '安徽', '福建', '江西', '辽宁', '吉林', '黑龙江', '内蒙古', '广西', '宁夏', '新疆', '西藏', '云南', '贵州', '陕西', '甘肃', '青海', '海南', '香港', '澳门', '台湾']
 const years = [2024, 2023, 2022, 2021, 2020]
 
 const filters = reactive({
@@ -492,8 +492,18 @@ onMounted(async () => {
   gap: 6px;
 }
 
-.search-item :deep(.el-input__wrapper),
+.search-item :deep(.el-input__wrapper) {
+    height: 50px;
+    border-radius: 8px;
+    border: 1px solid #e4e7ed;
+    transition: all 0.3s ease;
+  }
+
   .search-item :deep(.el-select) {
+    width: 100%;
+  }
+
+  .search-item :deep(.el-select__wrapper) {
     height: 50px;
     border-radius: 8px;
     border: 1px solid #e4e7ed;
@@ -501,23 +511,32 @@ onMounted(async () => {
   }
 
   .search-item :deep(.el-input__wrapper):hover,
-  .search-item :deep(.el-select):hover {
+  .search-item :deep(.el-select__wrapper):hover {
     border-color: #4096ff;
     box-shadow: 0 0 0 2px rgba(64, 150, 255, 0.2);
   }
 
   .search-item :deep(.el-input__wrapper.is-focus),
-  .search-item :deep(.el-select.is-focus) {
+  .search-item :deep(.el-select__wrapper.is-focus) {
     border-color: #4096ff;
     box-shadow: 0 0 0 2px rgba(64, 150, 255, 0.2);
   }
 
-  .search-item :deep(.el-input__inner),
-  .search-item :deep(.el-select__inner) {
+  .search-item :deep(.el-input__inner) {
     height: 50px;
     line-height: 50px;
     font-size: 16px;
     border-radius: 8px;
+  }
+
+  .search-item :deep(.el-select__input) {
+    height: 48px;
+    line-height: 48px;
+    font-size: 16px;
+  }
+
+  .search-item :deep(.el-select__inner) {
+    font-size: 16px;
   }
 
   .search-item :deep(.el-select-dropdown) {
