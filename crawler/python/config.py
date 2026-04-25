@@ -4,7 +4,7 @@
 
 # 数据库配置
 DATABASE_CONFIG = {
-    'path': r'E:\VSproject\China-University-Admission\data\test_university.db',
+    'path': r'E:\VSproject\China-University-Admission\data\university.db',
     'timeout': 30
 }
 
