@@ -84,8 +84,8 @@
 ### 进行中
 
 - [ ] 完善5个省份高考数据
-- [ ] 贡献指南编写
-- [ ] CSV数据模板创建
+- [x] 贡献指南编写
+- [x] CSV数据模板创建
 
 ### 计划中
 
@@ -98,14 +98,56 @@
 
 ## 🤝 如何贡献数据
 
-1. **查看支持列表**：确认您要贡献的高校/省份是否已支持
-2. **下载模板**：从[数据模板](https://github.com/\[你的用户名]/China-University-Admission/blob/main/data/templates)下载相应CSV模板
-3. **填写数据**：按照模板格式填写录取数据
-4. **提交数据**：
-   - 方式一：提交Pull Request
-   - 方式二：发送邮件至 [2869018789@qq.com](mailto:2869018789@qq.com)
+欢迎社区一起补充高校信息、本科录取数据和研究生录取数据。
 
-详细贡献指南请查看 [CONTRIBUTING.md](CONTRIBUTING.md)（待创建）
+### 提交前请先了解
+
+- **不需要新建数据库文件**
+- **不建议直接修改 `data/university.db`**
+- **推荐使用仓库提供的 CSV 模板提交数据**
+- 每次提交请尽量聚焦一个学校、一个省份或一类数据，方便审核
+
+### 普通贡献者提交流程
+
+1. **Fork 本仓库**
+2. **选择模板**：进入 `data/templates/` 目录，选择对应模板
+   - `universities.template.csv`：高校基础信息
+   - `undergraduate_admissions.template.csv`：本科招生/录取数据
+   - `postgraduate_admissions.template.csv`：研究生招生/录取数据
+3. **复制并填写模板**
+   - 建议将填写后的文件放到 `data/submissions/`
+   - 文件名建议使用：`学校名-省份-年份-数据类型.csv`
+   - 例如：`浙江大学-浙江-2024-本科录取数据.csv`
+4. **检查数据来源**
+   - 请在 CSV 中填写 `source_url`
+   - 如果官方页面无法直接引用，请在 Pull Request 描述中补充说明来源
+5. **提交 Pull Request**
+   - 在 PR 标题中说明学校、年份、省份和数据类型
+   - 在 PR 描述中写明数据来源、覆盖范围、是否已自查重复和空值
+
+### 是否必须用 CSV？
+
+是的，**建议所有普通贡献者统一使用 CSV 模板**。
+
+这样做的好处：
+
+- 不需要了解 SQLite 结构
+- 方便维护者批量审核和导入
+- 能减少字段缺失、顺序错误、命名不统一等问题
+
+### 贡献要求
+
+- 数据应来自高校官网、省教育考试院、中国研究生招生信息网等公开来源
+- 请尽量保证字段完整，尤其是学校名称、省份、年份、数据来源
+- 如果某些分数字段确实缺失，可以留空，但不要随意填写估算值
+- 不要提交与现有记录明显重复的数据
+- 如发现现有数据错误，欢迎直接提交修正 CSV 并在 PR 中说明
+
+### 相关文件
+
+- [贡献指南](CONTRIBUTING.md)
+- [数据模板目录](data/templates)
+- [数据来源说明](docs/DATA_SOURCES.md)
 
 ## ⭐ 支持项目
 
@@ -128,10 +170,13 @@ China-University-Admission/
 ├── frontend/                   # Vue 3 前端
 │   ├── src/                    # 源代码
 │   └── package.json            # 依赖配置
-├── data/                       # 数据库文件
-│   └── university.db           # SQLite 数据库
+├── data/                       # 数据库文件与数据模板
+│   ├── university.db           # SQLite 数据库
+│   ├── templates/              # 社区贡献 CSV 模板
+│   └── submissions/            # 建议存放待合并的贡献数据
 ├── images/                     # 项目截图
 ├── scripts/                    # 辅助脚本
+├── CONTRIBUTING.md             # 数据贡献指南
 ├── README.md                   # 项目说明
 └── LICENSE                     # 许可证
 ```
@@ -148,8 +193,8 @@ China-University-Admission/
 
 ## 📞 联系方式
 
-- 项目地址：[https://github.com/\EvanYao826\/china-university-admission](https://github.com/\[EvanYao826]/china-university-admission)
-- 问题反馈：[Issues](https://github.com/\[EvanYao826]/china-university-admission/issues)
+- 项目地址：[https://github.com/EvanYao826/China-University-Admission](https://github.com/EvanYao826/China-University-Admission)
+- 问题反馈：[Issues](https://github.com/EvanYao826/China-University-Admission/issues)
 
 ***
 

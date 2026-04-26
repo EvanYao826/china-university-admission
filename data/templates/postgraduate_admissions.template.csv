@@ -1,0 +1,2 @@
+university_name,year,degree_type,discipline_category,admission_type,political_score,foreign_language_score,subject1_score,subject2_score,total_score,remarks,adjustment_info,source_url
+示例大学,2025,学术学位,工学,普通复试线,50,50,80,80,320,这里填写备注,,https://example.com/source
