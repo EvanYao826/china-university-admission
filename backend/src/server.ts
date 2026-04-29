@@ -5,6 +5,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import schoolRoutes from './api/school';
+import universityRoutes from './api/university';
+import admissionRoutes from './api/admission';
+import searchRoutes from './api/search';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +36,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use('/api', schoolRoutes);
+app.use('/api', universityRoutes);
+app.use('/api', admissionRoutes);
+app.use('/api', searchRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.json({
