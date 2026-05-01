@@ -14,7 +14,7 @@ const gaokaoQuerySchema = z.object({
   batch: z.enum(['本科一批', '本科二批', '专科批', '提前批']).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),
-  sortBy: z.enum(['year', 'avg_score', 'admission_count']).default('year'),
+  sortBy: z.enum(['year', 'min_score', 'province']).default('year'),
   sortOrder: z.enum(['asc', 'desc']).default('desc')
 });
 
@@ -25,7 +25,7 @@ const graduateQuerySchema = z.object({
   study_mode: z.enum(['全日制', '非全日制']).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),
-  sortBy: z.enum(['year', 'major', 'admission_count']).default('year'),
+  sortBy: z.enum(['year', 'major', 'degree_type']).default('year'),
   sortOrder: z.enum(['asc', 'desc']).default('desc')
 });
 
@@ -208,7 +208,7 @@ router.get('/options/years', (_req: Request, res: Response<ApiResponse<any>>) =>
     const db = require('../db/index').default.getInstance().getDatabase();
 
     const gaokaoYears = db.prepare(`
-      SELECT DISTINCT year FROM gaokao_admissions ORDER BY year DESC
+      SELECT DISTINCT year FROM undergraduate_admissions ORDER BY year DESC
     `).all() as { year: number }[];
 
     const graduateYears = db.prepare(`
@@ -237,7 +237,7 @@ router.get('/options/provinces', (_req: Request, res: Response<ApiResponse<any>>
     const db = require('../db/index').default.getInstance().getDatabase();
 
     const provinces = db.prepare(`
-      SELECT DISTINCT province FROM gaokao_admissions ORDER BY province
+      SELECT DISTINCT province FROM undergraduate_admissions ORDER BY province
     `).all() as { province: string }[];
 
     return res.json({

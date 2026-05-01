@@ -19,7 +19,7 @@ const advancedSearchSchema = z.object({
   batch: z.enum(['本科一批', '本科二批', '专科批', '提前批']).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  sortBy: z.enum(['name', 'avg_score', 'admission_count', 'year']).default('name'),
+  sortBy: z.enum(['name', 'avg_score', 'year']).default('name'),
   sortOrder: z.enum(['asc', 'desc']).default('asc')
 });
 
@@ -35,11 +35,11 @@ router.get('/advanced', async (req: Request, res: Response<ApiResponse<any>>) =>
     // 构建基础查询
     let query = `
       SELECT DISTINCT u.*,
-             ga.avg_score, ga.year as admission_year,
-             ga.province as admission_province,
-             ga.category, ga.batch
+             ug.avg_score, ug.year as admission_year,
+             ug.province as admission_province,
+             ug.category, ug.batch
       FROM universities u
-      LEFT JOIN gaokao_admissions ga ON u.id = ga.university_id
+      LEFT JOIN undergraduate_admissions ug ON u.id = ug.university_id
       WHERE 1=1
     `;
 
@@ -70,27 +70,27 @@ router.get('/advanced', async (req: Request, res: Response<ApiResponse<any>>) =>
 
     // 录取数据筛选
     if (year) {
-      conditions.push('ga.year = ?');
+      conditions.push('ug.year = ?');
       values.push(year);
     }
 
     if (category) {
-      conditions.push('ga.category = ?');
+      conditions.push('ug.category = ?');
       values.push(category);
     }
 
     if (batch) {
-      conditions.push('ga.batch = ?');
+      conditions.push('ug.batch = ?');
       values.push(batch);
     }
 
     if (minScore !== undefined) {
-      conditions.push('ga.avg_score >= ?');
+      conditions.push('ug.avg_score >= ?');
       values.push(minScore);
     }
 
     if (maxScore !== undefined) {
-      conditions.push('ga.avg_score <= ?');
+      conditions.push('ug.avg_score <= ?');
       values.push(maxScore);
     }
 
@@ -100,7 +100,7 @@ router.get('/advanced', async (req: Request, res: Response<ApiResponse<any>>) =>
     }
 
     // 获取总数
-    const countQuery = `SELECT COUNT(DISTINCT u.id) as total FROM universities u LEFT JOIN gaokao_admissions ga ON u.id = ga.university_id WHERE 1=1 ${conditions.length > 0 ? 'AND ' + conditions.join(' AND ') : ''}`;
+    const countQuery = `SELECT COUNT(DISTINCT u.id) as total FROM universities u LEFT JOIN undergraduate_admissions ug ON u.id = ug.university_id WHERE 1=1 ${conditions.length > 0 ? 'AND ' + conditions.join(' AND ') : ''}`;
     const countStmt = db.prepare(countQuery);
     const countResult = countStmt.get(...values) as { total: number };
     const total = countResult.total;
@@ -108,11 +108,9 @@ router.get('/advanced', async (req: Request, res: Response<ApiResponse<any>>) =>
     // 排序
     let orderBy = 'u.name COLLATE NOCASE';
     if (sortBy === 'avg_score') {
-      orderBy = 'ga.avg_score';
-    } else if (sortBy === 'admission_count') {
-      orderBy = 'ga.admission_count';
+      orderBy = 'ug.avg_score';
     } else if (sortBy === 'year') {
-      orderBy = 'ga.year';
+      orderBy = 'ug.year';
     }
 
     query += ` ORDER BY ${orderBy} ${sortOrder.toUpperCase()}`;
@@ -262,9 +260,9 @@ router.get('/statistics', (_req: Request, res: Response<ApiResponse<any>>) => {
 
     // 获取搜索相关统计
     const totalUniversitiesResult = db.prepare('SELECT COUNT(*) as count FROM universities').get() as { count: number };
-    const totalGaokaoRecordsResult = db.prepare('SELECT COUNT(*) as count FROM gaokao_admissions').get() as { count: number };
+    const totalGaokaoRecordsResult = db.prepare('SELECT COUNT(*) as count FROM undergraduate_admissions').get() as { count: number };
     const totalGraduateRecordsResult = db.prepare('SELECT COUNT(*) as count FROM graduate_admissions').get() as { count: number };
-    const latestYearResult = db.prepare('SELECT MAX(year) as year FROM gaokao_admissions').get() as { year: number };
+    const latestYearResult = db.prepare('SELECT MAX(year) as year FROM undergraduate_admissions').get() as { year: number };
 
     const totalUniversities = totalUniversitiesResult.count;
     const totalGaokaoRecords = totalGaokaoRecordsResult.count;

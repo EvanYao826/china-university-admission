@@ -8,6 +8,8 @@ import schoolRoutes from './api/school';
 import universityRoutes from './api/university';
 import admissionRoutes from './api/admission';
 import searchRoutes from './api/search';
+import undergraduateRoutes from './api/undergraduate';
+import postgraduateRoutes from './api/postgraduate';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +41,8 @@ app.use('/api', schoolRoutes);
 app.use('/api', universityRoutes);
 app.use('/api', admissionRoutes);
 app.use('/api', searchRoutes);
+app.use('/api/undergraduate', undergraduateRoutes);
+app.use('/api/postgraduate', postgraduateRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.json({
@@ -65,15 +69,13 @@ app.get('/api', (_req: Request, res: Response) => {
       undergraduate: {
         base: '/api/undergraduate',
         endpoints: [
-          'GET /yearly - 获取本科历年分数',
-          'GET /major - 获取专业分数'
+          'GET /admissions - 获取本科录取数据'
         ]
       },
       postgraduate: {
         base: '/api/postgraduate',
         endpoints: [
-          'GET /info - 获取研究生招生信息',
-          'GET /reply-lines - 获取复试分数线'
+          'GET /admissions - 获取研究生录取数据'
         ]
       }
     }

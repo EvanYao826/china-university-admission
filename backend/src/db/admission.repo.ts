@@ -49,13 +49,13 @@ export class AdmissionRepository {
     const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
     // 获取总数
-    const countStmt = this.db.prepare(`SELECT COUNT(*) as total FROM gaokao_admissions ${whereClause}`);
+    const countStmt = this.db.prepare(`SELECT COUNT(*) as total FROM undergraduate_admissions ${whereClause}`);
     const countResult = countStmt.get(...values) as { total: number };
     const total = countResult.total;
 
     // 获取数据
     const query = `
-      SELECT * FROM gaokao_admissions
+      SELECT * FROM undergraduate_admissions
       ${whereClause}
       ORDER BY ${sortBy} ${sortOrder.toUpperCase()}
       LIMIT ? OFFSET ?
@@ -142,15 +142,15 @@ export class AdmissionRepository {
     const { province, year, category, batch, score, limit = 20 } = params;
 
     const query = `
-      SELECT ga.*, u.name as university_name
-      FROM gaokao_admissions ga
-      JOIN universities u ON ga.university_id = u.id
-      WHERE ga.province = ?
-        AND ga.year = ?
-        AND ga.category = ?
-        AND ga.batch = ?
-        AND ga.avg_score >= ?
-      ORDER BY ga.avg_score ASC
+      SELECT ug.*, u.name as university_name
+      FROM undergraduate_admissions ug
+      JOIN universities u ON ug.university_id = u.id
+      WHERE ug.province = ?
+        AND ug.year = ?
+        AND ug.category = ?
+        AND ug.batch = ?
+        AND ug.min_score <= ?
+      ORDER BY ug.min_score DESC
       LIMIT ?
     `;
 
@@ -163,21 +163,19 @@ export class AdmissionRepository {
     // 高考数据统计
     const gaokaoYearStats = this.db.prepare(`
       SELECT year, COUNT(*) as record_count,
-             AVG(avg_score) as avg_score,
-             SUM(admission_count) as total_admissions
-      FROM gaokao_admissions
+             AVG(avg_score) as avg_score
+      FROM undergraduate_admissions
       WHERE university_id = ?
       GROUP BY year
       ORDER BY year DESC
-    `).all(universityId) as Array<{ year: number; record_count: number; avg_score: number; total_admissions: number }>;
+    `).all(universityId) as Array<{ year: number; record_count: number; avg_score: number }>;
 
     const gaokaoProvinceStats = this.db.prepare(`
-      SELECT province, COUNT(*) as record_count,
-             SUM(admission_count) as total_admissions
-      FROM gaokao_admissions
+      SELECT province, COUNT(*) as record_count
+      FROM undergraduate_admissions
       WHERE university_id = ?
       GROUP BY province
-      ORDER BY total_admissions DESC
+      ORDER BY record_count DESC
     `).all(universityId);
 
     // 研究生数据统计
@@ -196,7 +194,7 @@ export class AdmissionRepository {
       FROM graduate_admissions
       WHERE university_id = ?
       GROUP BY major
-      ORDER BY total_admissions DESC
+      ORDER BY record_count DESC
       LIMIT 10
     `).all(universityId);
 
@@ -204,8 +202,7 @@ export class AdmissionRepository {
       gaokao: {
         byYear: gaokaoYearStats,
         byProvince: gaokaoProvinceStats,
-        totalRecords: gaokaoYearStats.reduce((sum, item) => sum + item.record_count, 0),
-        totalAdmissions: gaokaoYearStats.reduce((sum, item) => sum + (item.total_admissions || 0), 0)
+        totalRecords: gaokaoYearStats.reduce((sum, item) => sum + item.record_count, 0)
       },
       graduate: {
         byYear: graduateYearStats,
@@ -219,14 +216,14 @@ export class AdmissionRepository {
   // 获取省份的录取数据
   getProvinceAdmissions(province: string, year: number, category: string, batch: string) {
     const query = `
-      SELECT ga.*, u.name as university_name, u.level, u.type
-      FROM gaokao_admissions ga
-      JOIN universities u ON ga.university_id = u.id
-      WHERE ga.province = ?
-        AND ga.year = ?
-        AND ga.category = ?
-        AND ga.batch = ?
-      ORDER BY ga.avg_score DESC
+      SELECT ug.*, u.name as university_name, u.level, u.type
+      FROM undergraduate_admissions ug
+      JOIN universities u ON ug.university_id = u.id
+      WHERE ug.province = ?
+        AND ug.year = ?
+        AND ug.category = ?
+        AND ug.batch = ?
+      ORDER BY ug.min_score DESC
     `;
 
     const stmt = this.db.prepare(query);
@@ -252,11 +249,10 @@ export class AdmissionRepository {
 
     const query = `
       SELECT year, province, category,
-             AVG(avg_score) as avg_score,
-             AVG(avg_rank) as avg_rank,
-             SUM(admission_count) as total_admissions,
+             AVG(min_score) as avg_score,
+             AVG(min_rank) as avg_rank,
              COUNT(*) as record_count
-      FROM gaokao_admissions
+      FROM undergraduate_admissions
       ${whereClause}
       GROUP BY year, province, category
       ORDER BY year, province, category

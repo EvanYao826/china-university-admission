@@ -52,7 +52,7 @@ export class SchoolRepository {
   private db: Database.Database;
 
   constructor() {
-    const dbPath = path.join(__dirname, '../../../data/university.db');
+    const dbPath = path.join(__dirname, '../../../data/test.db');
     this.db = new Database(dbPath);
     this.db.pragma('foreign_keys = ON');
   }

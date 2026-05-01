@@ -268,7 +268,7 @@ const selectedSchool = ref<any>(null)
 const activeTab = ref('intro')
 
 const provinces = ['北京', '上海', '天津', '重庆', '江苏', '浙江', '广东', '河南', '山东', '山西', '河北', '四川', '湖北', '湖南', '安徽', '福建', '江西', '辽宁', '吉林', '黑龙江', '内蒙古', '广西', '宁夏', '新疆', '西藏', '云南', '贵州', '陕西', '甘肃', '青海', '海南', '香港', '澳门', '台湾']
-const years = [2024, 2023, 2022, 2021, 2020]
+const years = [2025, 2024, 2023, 2022, 2021, 2020]
 
 const filters = reactive({
   name: '',
@@ -462,13 +462,14 @@ const handleSearch = () => {
 }
 
 onMounted(async () => {
-  fetchSchools()
-  // 初始化获取当前省份的可用类别
+  // 先获取当前省份的可用类别（会更新 undergraduateFilters.category）
   await fetchAvailableCategories(undergraduateFilters.province)
-  // 初始化获取当前省份和类别的可用批次
+  // 再获取当前省份和类别的可用批次
   if (availableCategories.value.length > 0) {
     await fetchAvailableBatches(undergraduateFilters.province, availableCategories.value[0])
   }
+  // 最后获取学校列表（会自动 select 第一个学校并查询数据）
+  await fetchSchools()
 })
 </script>
 
